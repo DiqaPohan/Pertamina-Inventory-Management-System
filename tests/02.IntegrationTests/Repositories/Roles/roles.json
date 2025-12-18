@@ -1,0 +1,61 @@
+[
+  {
+    "name": "App Manager",
+    "scopes":
+    [
+      "solutiontemplate.app.create",
+      "solutiontemplate.app.delete",
+      "solutiontemplate.app.edit",
+      "solutiontemplate.app.index",
+      "solutiontemplate.app.view"
+    ]
+  },
+  {
+    "name": "Auditor",
+    "scopes":
+    [
+      "solutiontemplate.audit.index",
+      "solutiontemplate.audit.view"
+    ]
+  },
+  {
+    "name": "Doctor",
+    "scopes":
+    [
+      "solutiontemplate.healthcheck.view"
+    ]
+  },
+  {
+    "name": "Document Manager",
+    "scopes":
+    [
+      "solutiontemplate.document.create",
+      "solutiontemplate.document.delete",
+      "solutiontemplate.document.download",
+      "solutiontemplate.document.index"
+    ]
+  },
+  {
+    "name": "Programmer",
+    "scopes":
+    [
+      "solutiontemplate.sourcecode.view"
+    ]
+  },
+  {
+    "name": "Ticket Handler",
+    "scopes":
+    [
+      "solutiontemplate.app.index",
+      "solutiontemplate.app.view",
+      "solutiontemplate.ticket.handle"
+    ]
+  },
+  {
+    "name": "Ticket Moderator",
+    "scopes":
+    [
+      "solutiontemplate.ticket.remove"
+    ]
+  }
+]

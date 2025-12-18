@@ -1,0 +1,102 @@
+﻿@page "/Catalog/BuildingBlock"
+@using Pertamina.SolutionTemplate.Bsui.Services.AppInfo
+@attribute [Authorize]
+@inject IOptions<AppInfoOptions> _appInfoOptions
+<BrowserTabTitle>By Business Building Block</BrowserTabTitle>
+<MudBreadcrumbs Items="_breadcrumbItems"></MudBreadcrumbs>
+<ErrorViewer Error="_error" />
+<LoadingLinear IsVisible="_isLoading" />
+<AuthorizeView Context="authorizeContext">
+    <Authorized>
+        @if (@authorizeContext.User.GetCompanyCode() == "2186")
+        {
+            @if (!@_isLoading)
+            {
+                @if (_dataCount is not null)
+                {
+                    <MudGrid>
+
+                        <MudItem xs="12">
+                            @foreach (var product in _dataCount)
+                            {
+                                <MudCard Outlined="true" Square="true" Class="border-solid border-2">
+                                    <MudCardHeader Style="background-color: #1E88E5; color: var(--mud-palette-primary-text);">
+                                        <CardHeaderContent>
+                                            <MudText Typo="Typo.body1" Align="Align.Center">  @product.Level_1_WithDetails </MudText>
+                                        </CardHeaderContent>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudExpansionPanels>
+                                            @foreach (var subproduct in product.Level_2_WithDetails)
+                                            {
+                                                <MudExpansionPanel Style="background-color: #61abec;color: white;
+        font-weight: bold;" Text=@subproduct.Level_2_WithDetails>
+                                                    <MudGrid>
+                                                        <MudExpansionPanels>
+                                                            @foreach (var subproduct in subproduct.Data_WithDetails)
+                                                            {
+                                                                <MudExpansionPanel Text=@subproduct.Area>
+                                                                    <MudExpansionPanels>
+                                                                        @foreach (var substatus in subproduct.Data)
+                                                                        {
+                                                                            <MudExpansionPanel Text=@substatus.Status>
+                                                                                <MudItem xs="12">
+                                                                                    <MudGrid>
+                                                                                        @foreach (var subdetail in @substatus.Data)
+                                                                                        {
+                                                                                            @if (subdetail.Application_Status is not null)
+                                                                                            {
+                                                                                                @if (subdetail.Application_Status.ToLower() == "aktif")
+                                                                                                {
+                                                                                                    <MudItem Class="flex-wrap" @onclick="(() => ShowDialog(subdetail.Application_Name,subdetail.Capability_Level_1))">
+                                                                                                        <MudChip Class="border-solid border-2  d-flex align-center justify-center mud-width-full" style="background-color: #66BB6A; color:white;">@subdetail.Application_Name</MudChip>
+                                                                                                    </MudItem>
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                    <MudItem Class="flex-wrap" @onclick="(() => ShowDialog(subdetail.Application_Name,subdetail.Capability_Level_1))">
+                                                                                                        <MudChip Class="border-solid border-2 d-flex align-center justify-center mud-width-full" style="background-color: #CD5C5C; color:white;">@subdetail.Application_Name</MudChip>
+                                                                                                    </MudItem>
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    </MudGrid>
+                                                                                </MudItem>
+                                                                            </MudExpansionPanel>
+                                                                        }
+                                                                    </MudExpansionPanels>
+                                                                </MudExpansionPanel>
+                                                            }
+                                                        </MudExpansionPanels>
+                                                    </MudGrid>
+                                                </MudExpansionPanel>
+                                            }
+                                        </MudExpansionPanels>
+                                    </MudCardContent>
+                                </MudCard>
+                            }
+                        </MudItem>
+                    </MudGrid>
+                }
+                else
+                {
+                    <div class="loading">
+                        <span id="spancontrol" class="visible">Data tidak di temukan </span>
+                    </div>
+                }
+            }
+        }
+        else
+        {
+            <div class="d-flex justify-space-around mt-16">
+                <div>
+                    <MudText Typo="Typo.h2">Kode Perusahaan tidak terdaftar</MudText>
+                    <MudText Typo="Typo.body1">Aplikasi ini hanya bisa di akses untuk user dari KPI (Kilang Pertamina Indonesia)</MudText>
+                </div>
+                <div>
+                    <img src="img/unauthorized.png" alt="Unauthorized" width="300" />
+                </div>
+            </div>
+        }
+    </Authorized>
+</AuthorizeView>

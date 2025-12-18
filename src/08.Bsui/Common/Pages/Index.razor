@@ -1,0 +1,27 @@
+﻿@page "/"
+
+@using Pertamina.SolutionTemplate.Bsui.Services.AppInfo
+
+@inject IOptions<AppInfoOptions> _appInfoOptions
+
+<BrowserTabTitle>@CommonDisplayTextFor.Home</BrowserTabTitle>
+<MudBreadcrumbs Items="_breadcrumbItems"></MudBreadcrumbs>
+<MudText Typo="Typo.h3">@_greetings</MudText>
+<MudText Typo="Typo.h5" Class="mt-16">Welcome to</MudText>
+<MudText Typo="Typo.h4" Class="mt-4">@_appInfoOptions.Value.FullName</MudText>
+<AuthorizeView Context="authorizeContext">
+    <Authorized>
+        @if (@authorizeContext.User.GetCompanyCode() != "2186")
+        {
+            <div class="d-flex justify-space-around mt-16">
+                <div>
+                    <MudText Typo="Typo.h2">Kode Perusahaan tidak terdaftar</MudText>
+                    <MudText Typo="Typo.body1">Aplikasi ini hanya bisa di akses untuk user dari KPI (Kilang Pertamina Indonesia)</MudText>
+                </div>
+                <div>
+                    <img src="img/unauthorized.png" alt="Unauthorized" width="300" />
+                </div>
+            </div>
+        }
+    </Authorized>
+</AuthorizeView>

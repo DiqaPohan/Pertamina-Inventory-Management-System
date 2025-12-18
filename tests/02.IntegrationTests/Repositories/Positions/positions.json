@@ -1,0 +1,119 @@
+[
+  {
+    "id": "30093636",
+    "name": "Kepala Teknologi Informasi",
+    "roleNames":
+    [
+      "Auditor",
+      "Document Manager",
+      "Programmer"
+    ],
+    "customParameters":
+    [
+      {
+        "key": "KeyA",
+        "value": "ValueA-30093636"
+      },
+      {
+        "key": "KeyB",
+        "value": "ValueB-30093636"
+      }
+    ]
+  },
+  {
+    "id": "30095645",
+    "name": "Ast. Teknologi Informasi",
+    "roleNames":
+    [
+      "App Manager",
+      "Ticket Moderator"
+    ],
+    "customParameters":
+    [
+      {
+        "key": "KeyA",
+        "value": "ValueA-30095645"
+      },
+      {
+        "key": "KeyB",
+        "value": "ValueB-30095645"
+      }
+    ]
+  },
+  {
+    "id": "30203780",
+    "name": "Analyst Application Support",
+    "roleNames":
+    [
+      "Ticket Moderator"
+    ],
+    "customParameters":
+    [
+      {
+        "key": "KeyA",
+        "value": "ValueA-30203780"
+      },
+      {
+        "key": "KeyB",
+        "value": "ValueB-30203780"
+      }
+    ]
+  },
+  {
+    "id": "30203781",
+    "name": "Jr Analyst Application Support",
+    "roleNames":
+    [
+      "Ticket Handler"
+    ],
+    "customParameters":
+    [
+      {
+        "key": "KeyA",
+        "value": "ValueA-30203781"
+      },
+      {
+        "key": "KeyB",
+        "value": "ValueB-30203781"
+      }
+    ]
+  },
+  {
+    "id": "30203782",
+    "name": "Jr Analyst Application Support",
+    "roleNames":
+    [
+      "Ticket Handler"
+    ],
+    "customParameters":
+    [
+      {
+        "key": "KeyA",
+        "value": "ValueA-30203782"
+      },
+      {
+        "key": "KeyB",
+        "value": "ValueB-30203782"
+      }
+    ]
+  },
+  {
+    "id": "30203779",
+    "name": "Ast Manager Infrastructure Apps Support",
+    "roleNames":
+    [
+      "Doctor"
+    ],
+    "customParameters":
+    [
+      {
+        "key": "KeyA",
+        "value": "ValueA-30203779"
+      },
+      {
+        "key": "KeyB",
+        "value": "ValueB-30203779"
+      }
+    ]
+  }
+]

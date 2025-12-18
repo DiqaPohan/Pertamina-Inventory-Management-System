@@ -1,0 +1,11 @@
+﻿@page "/TabularView"
+
+@using Pertamina.SolutionTemplate.Bsui.Services.AppInfo
+
+@inject IOptions<AppInfoOptions> _appInfoOptions
+
+<BrowserTabTitle>@CommonDisplayTextFor.TabularView</BrowserTabTitle>
+<MudBreadcrumbs Items="_breadcrumbItems"></MudBreadcrumbs>
+<MudText Typo="Typo.h3">@_greetings</MudText>
+<MudText Typo="Typo.h5" Class="mt-16">Welcome to</MudText>
+<MudText Typo="Typo.h4" Class="mt-4">@_appInfoOptions.Value.FullName</MudText>

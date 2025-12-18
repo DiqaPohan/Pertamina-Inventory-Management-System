@@ -1,0 +1,11 @@
+﻿$env:ASPNETCORE_ENVIRONMENT='Local'
+set ASPNETCORE_ENVIRONMENT=Local
+dotnet tool update --global dotnet-ef
+
+dotnet ef migrations add SqlServerSolutionTemplateDbContext_001_InitialSchema --context SqlServerSolutionTemplateDbContext --project src/05.Infrastructure --startup-project src/06.WebApi --output-dir Persistence/SqlServer/Migrations
+
+dotnet ef migrations remove  --context SqlServerSolutionTemplateDbContext --project src/05.Infrastructure --startup-project src/06.WebApi
+
+dotnet ef database update --context SqlServerSolutionTemplateDbContext --project src/05.Infrastructure --startup-project src/06.WebApi
+
+dotnet ef database drop --force --context SqlServerSolutionTemplateDbContext --project src/05.Infrastructure --startup-project src/06.WebApi

@@ -1,0 +1,238 @@
+﻿@page "/Catalog/Request"
+@using Pertamina.SolutionTemplate.Shared.Data.Queries.GetSingleDataDraftHistoricalApplicationPhase
+@using Pertamina.SolutionTemplate.Shared.Data.Queries.GetSingleRequestData
+@using Syncfusion.Blazor.Navigations
+@using Pertamina.SolutionTemplate.Bsui.Services.AppInfo
+@attribute [Authorize]
+@inject IOptions<AppInfoOptions> _appInfoOptions
+@inject NavigationManager NavigationManager
+<style>
+    .e-grid .e-headercell {
+    }
+
+    .e-headercell {
+        color: black;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+    .e-grid .e-icon-filter.e-filtered::before {
+        background-color: white;
+        font-weight: bold;
+    }
+
+    /*     filter not applied */
+    .e-grid .e-icon-filter::before {
+        content: "";
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        background-image: url('img/no.png'); /* Path to your image */
+        background-size: cover;
+    }
+
+    /*  filter applied */
+    .e-grid .e-icon-filter.e-filtered::before {
+        content: "";
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        background-image: url('img/yes.png'); /* Path to your image */
+        background-size: cover;
+    }
+
+    .e-rowcell .e-templatecell .div .a:link {
+        color: black;
+        text-align: center;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .status-nonaktif {
+        background-color: #CD5C5C;
+        font-weight: bold;
+    }
+
+    .status-aktif {
+        background-color: #66BB6A;
+        font-weight: bold;
+    }
+
+    .status-tidakdiketahui {
+        background-color: #ffc133;
+        font-weight: bold;
+    }
+
+  
+
+    .itemlink-div a:link, .itemlink-div a:visited {
+        color: black;
+        text-align: center;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .itemlink-div a:hover, .itemlink-div a:active {
+        background-color: lightgoldenrodyellow;
+    }
+</style>
+<style>
+    .e-btn.e-icon-btn, .e-css.e-btn.e-icon-btn {
+        padding: 4px 0px;
+        color: white;
+        font-weight: bold;
+    }
+
+    .e-grid .e-unboundcelldiv > button {
+        margin: 0 0px;
+        color: white;
+        font-weight: bold;
+    }
+
+</style>
+<BrowserTabTitle>Request And Approval</BrowserTabTitle>
+<MudBreadcrumbs Items="_breadcrumbItems"></MudBreadcrumbs>
+<ErrorViewer Error="_error" />
+<LoadingLinear IsVisible="_isLoading" />
+
+<AuthorizeView Context="authorizeContext">
+    <Authorized>
+        
+        @if (@authorizeContext.User.GetCompanyCode() == "2186")
+        {
+            @if (!@_isLoading)
+            {
+                <MudContainer MaxWidth="MaxWidth.False">
+                    <MudGrid>
+                        <MudItem md="6"
+                                 sm="12"
+                                 xs="12">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="@RouteFor.AddDraft">Add New Draft Application</MudButton>
+                        </MudItem>
+                        <MudItem md="6"
+                                 sm="12"
+                                 xs="12">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="@RouteFor.Edit">Edit Application</MudButton>
+                        </MudItem>
+                        <MudSpacer></MudSpacer>
+                        <MudItem md="12"
+                                 sm="12"
+                                 xs="12">
+                            <MudCard Outlined="true" Square="true" Class="border-solid border-2">
+                                <MudCardHeader Style="background-color: #1E88E5; color: var(--mud-palette-primary-text);">
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.body1" Align="Align.Center">
+                                            List of Draft Request Application Data
+                                        </MudText>
+                                    </CardHeaderContent>
+                                </MudCardHeader>
+                                <MudCardContent>
+                                    <MudGrid>
+                                        <MudItem xs="12">
+                                            <SfGrid ID="GridRequested" DataSource="@_dataRequestCount" Toolbar="@(new List<string>() { "Search" })" AllowFiltering="true" AllowPaging="true" AllowTextWrap="true">
+                                                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.CheckBox"></GridFilterSettings>
+                                                <GridEvents CommandClicked="CommandClickGridRequested" TValue="GetSingleRequestData" RowDataBound="RowBoundGridRequest"></GridEvents>
+                                                <GridColumns>
+                                                    <GridColumn Field=@nameof(GetSingleRequestData.Code_Apps) AllowSearching="true" AllowFiltering="true" HeaderText="ID" TextAlign="TextAlign.Right" Width="100"></GridColumn>
+                                                    <GridColumn Field=@nameof(GetSingleRequestData.Application_Name) AllowSearching="true" AllowFiltering="true" HeaderText="App Name" Width="150"></GridColumn>
+                                                    <GridColumn Field=@nameof(GetSingleRequestData.Tipe_Request) AllowSearching="true" AllowFiltering="true" HeaderText="Tipe" Width="100"></GridColumn>
+                                                    <GridColumn Field=@nameof(GetSingleRequestData.Approved_Status) AllowSearching="true" AllowFiltering="true" HeaderText="Status" Width="150"></GridColumn>
+                                                    <GridColumn Field=@nameof(GetSingleRequestData.Source) AllowSearching="true" AllowFiltering="true" HeaderText="Source" Width="100"></GridColumn>
+                                                    <GridColumn Field=@nameof(GetSingleRequestData.CreatedBy) AllowSearching="true" AllowFiltering="true" HeaderText="Requested By" Width="180"></GridColumn>
+                                                    <GridColumn HeaderText="Manage Records" Width="150">
+                                                        <GridCommandColumns>
+                                                            <GridCommandColumn Type="CommandButtonType.Edit" ButtonOption="@(new CommandButtonOptions() {IconCss="e-icons e-circle-info", CssClass="e-round-corner e-primary" , Content="View" })"></GridCommandColumn>
+                                                        </GridCommandColumns>
+                                                    </GridColumn>
+                                                </GridColumns>
+                                            </SfGrid>
+                                        </MudItem>
+                                    </MudGrid>
+                                </MudCardContent>
+                            </MudCard>
+@* 
+                            <MudCard Outlined="true" Square="true" Class="border-solid border-2">
+                                <MudCardHeader Style="background-color: #1E88E5; color: var(--mud-palette-primary-text);">
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.body1" Align="Align.Center">
+                                            List of Draft Data
+                                        </MudText>
+                                    </CardHeaderContent>
+                                </MudCardHeader>
+                                <MudCardContent>
+                                    <MudGrid>
+                                        <MudItem xs="12">
+                                            <SfTab OverflowMode="OverflowMode.Scrollable">
+                                                <TabItems>
+                                                    <TabItem>
+                                                        <HeaderTemplate>Request Application Data</HeaderTemplate>
+                                                        <ContentTemplate>
+                                                            <SfGrid ID="GridRequested" DataSource="@_dataRequestCount" Toolbar="@(new List<string>() { "Search" })" AllowFiltering="true" AllowPaging="true" AllowTextWrap="true">
+                                                                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.CheckBox"></GridFilterSettings>
+                                                                <GridEvents CommandClicked="CommandClickGridRequested" TValue="GetSingleRequestData" RowDataBound="RowBoundGridRequest"></GridEvents>
+                                                                <GridColumns>
+                                                                    <GridColumn Field=@nameof(GetSingleRequestData.Code_Apps) AllowSearching="true" AllowFiltering="true" HeaderText="ID" TextAlign="TextAlign.Right" Width="100"></GridColumn>
+                                                                    <GridColumn Field=@nameof(GetSingleRequestData.Application_Name) AllowSearching="true" AllowFiltering="true" HeaderText="App Name" Width="150"></GridColumn>
+                                                                    <GridColumn Field=@nameof(GetSingleRequestData.Tipe_Request) AllowSearching="true" AllowFiltering="true" HeaderText="Tipe" Width="100"></GridColumn>
+                                                                    <GridColumn Field=@nameof(GetSingleRequestData.Approved_Status) AllowSearching="true" AllowFiltering="true" HeaderText="Status" Width="150"></GridColumn>
+                                                                    <GridColumn Field=@nameof(GetSingleRequestData.Source) AllowSearching="true" AllowFiltering="true" HeaderText="Source" Width="100"></GridColumn>
+                                                                    <GridColumn Field=@nameof(GetSingleRequestData.CreatedBy) AllowSearching="true" AllowFiltering="true" HeaderText="Requested By" Width="180"></GridColumn>
+                                                                    <GridColumn HeaderText="Manage Records" Width="150">
+                                                                        <GridCommandColumns>
+                                                                            <GridCommandColumn Type="CommandButtonType.Edit" ButtonOption="@(new CommandButtonOptions() {IconCss="e-icons e-circle-info", CssClass="e-round-corner e-primary" , Content="View" })"></GridCommandColumn>
+                                                                        </GridCommandColumns>
+                                                                    </GridColumn>
+                                                                </GridColumns>
+                                                            </SfGrid>
+
+                                                        </ContentTemplate>
+                                                    </TabItem>
+                                                    <TabItem>
+                                                        <HeaderTemplate>Request Historical Application Phase</HeaderTemplate>
+                                                        <ContentTemplate>
+                                                            <SfGrid ID="GridHistorical" DataSource="@_dataHistoricalCount" Toolbar="@(new List<string>() { "Search" })" AllowFiltering="true" AllowPaging="true" AllowTextWrap="true">
+                                                                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.CheckBox"></GridFilterSettings>
+                                                                <GridEvents CommandClicked="CommandClickGridHistorical" TValue="GetSingleDataDraftHistoricalApplicationPhase" RowDataBound="RowBoundGridHistorical"></GridEvents>
+                                                                <GridColumns>
+                                                                    <GridColumn Field=@nameof(GetSingleDataDraftHistoricalApplicationPhase.Code_Apps) AllowSearching="true" AllowFiltering="true" HeaderText="ID Draft" TextAlign="TextAlign.Right" Width="100"></GridColumn>
+                                                                    <GridColumn Field=@nameof(GetSingleDataDraftHistoricalApplicationPhase.Code_Apps_Update) AllowSearching="true" AllowFiltering="true" HeaderText="ID App" TextAlign="TextAlign.Right" Width="100"></GridColumn>
+                                                                    <GridColumn Field=@nameof(GetSingleDataDraftHistoricalApplicationPhase.Phase) AllowSearching="true" AllowFiltering="true" HeaderText="Phase" Width="100"></GridColumn>
+                                                                    <GridColumn Field=@nameof(GetSingleDataDraftHistoricalApplicationPhase.Approved_Status) AllowSearching="true" AllowFiltering="true" HeaderText="Status" Width="150"></GridColumn>
+                                                                    <GridColumn Field=@nameof(GetSingleDataDraftHistoricalApplicationPhase.Source) AllowSearching="true" AllowFiltering="true" HeaderText="Source" Width="100"></GridColumn>
+                                                                    <GridColumn Field=@nameof(GetSingleDataDraftHistoricalApplicationPhase.CreatedBy) AllowSearching="true" AllowFiltering="true" HeaderText="Requested By" Width="200"></GridColumn>
+                                                                    <GridColumn HeaderText="Manage Records" Width="150">
+                                                                        <GridCommandColumns>
+                                                                            <GridCommandColumn Type="CommandButtonType.Edit" ButtonOption="@(new CommandButtonOptions() {IconCss="e-icons e-circle-info", CssClass="e-round-corner e-primary" , Content="View" })"></GridCommandColumn>
+                                                                        </GridCommandColumns>
+                                                                    </GridColumn>
+                                                                </GridColumns>
+                                                            </SfGrid>
+
+                                                        </ContentTemplate>
+                                                    </TabItem>
+                                                </TabItems>
+                                            </SfTab>
+                                        </MudItem>
+                                    </MudGrid>
+                                </MudCardContent>
+                            </MudCard>
+                       *@
+                        </MudItem>
+                    </MudGrid>
+                </MudContainer>
+            }
+        }
+        else
+        {
+            <div class="d-flex justify-space-around mt-16">
+                <div>
+                    <MudText Typo="Typo.h2">Kode Perusahaan tidak terdaftar</MudText>
+                    <MudText Typo="Typo.body1">Aplikasi ini hanya bisa di akses untuk user dari KPI (Kilang Pertamina Indonesia)</MudText>
+                </div>
+                <div>
+                    <img src="img/unauthorized.png" alt="Unauthorized" width="300" />
+                </div>
+            </div>
+        }
+    </Authorized>
+</AuthorizeView>

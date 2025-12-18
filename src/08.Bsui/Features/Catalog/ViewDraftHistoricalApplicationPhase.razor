@@ -1,0 +1,158 @@
+﻿@* @using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Calendars
+@using Syncfusion.Blazor.Cards
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Inputs
+@using Pertamina.SolutionTemplate.Shared.Data.Queries.GetSingleData;
+@using Syncfusion.Blazor.Popups
+@page "/Catalog/ViewDraftHistoricalApplicationPhase/{id}"
+@attribute [Authorize]
+<style>
+    .head, .item {
+        display: table;
+        width: 100%;
+        margin: auto;
+    }
+
+    .head {
+        height: 40px;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .name, .city {
+        display: table-cell;
+        vertical-align: middle;
+        width: 50%;
+    }
+
+    .head .name {
+        text-indent: 16px;
+    }
+
+    .head .city {
+        text-indent: 10px;
+    }
+</style>
+
+<BrowserTabTitle>
+    "View Draft Historical App Phase"
+</BrowserTabTitle>
+<MudBreadcrumbs Items="_breadcrumbItems" />
+<PageHeader Title="View Draft Historical Application Phase" />
+<ErrorViewer Error="_error" />
+<LoadingLinear IsVisible="_isLoading" />
+
+<AuthorizeView Context="authorizeContext">
+    <Authorized>
+
+        @if (@authorizeContext.User.GetCompanyCode() == "2186")
+        {
+            @if (!@_isLoading)
+            {
+                <EditForm Model="_request"
+                          OnInvalidSubmit="OnInvalidSubmit">
+                    <FluentValidationValidator />
+                    <SfCard>
+                        <CardContent>
+                            <MudFocusTrap>
+                                <MudGrid>
+                                    <MudGrid>
+                                        <MudItem xs="12">
+                                            <MudTextField Label="Draft Code"
+                                                          @bind-Value="_request.Code_Apps" ReadOnly="true" />
+                                        </MudItem>
+                                        <MudItem xs="6">
+                                            <MudTextField Label="Code Aplikasi"
+                                                          @bind-Value="_request.Code_Apps_Update" ReadOnly="true" />
+                                        </MudItem>
+                                        <MudItem xs="6">
+                                            <MudTextField Label="Name Aplikasi"
+                                                          @bind-Value="_request.Name_Apps_Update" ReadOnly="true" />
+                                        </MudItem>
+                                        <MudItem xs="12">
+
+                                            <MudTextField Label="Date"
+                                                          ReadOnly="true"
+                                                          @bind-Value="_request.Date" />
+                                        </MudItem>
+                                        <MudItem xs="12">
+                                            <MudTextField Label="Application Phase"
+                                                          Required="true" ReadOnly="true"
+                                                          @bind-Value="_request.Phase" />
+                                        </MudItem>
+                                        <MudItem xs="12">
+                                            <MudTextField Label="Source"
+                                                          ReadOnly="true"
+                                                          @bind-Value="_request.Source" />
+                                        </MudItem>
+                                        <MudItem xs="12">
+                                            <MudTextField Label="Info"
+                                                          ReadOnly="true"
+                                                          @bind-Value="_request.Keterangan" />
+                                        </MudItem>
+                                    </MudGrid>
+                                </MudGrid>
+                            </MudFocusTrap>
+
+                            <SfDialog Target="#target" Width="700px" IsModal="true" ShowCloseIcon="true" @bind-Visible="Visibility">
+                                <DialogTemplates>
+                                    <Header>@_strHeadDialog</Header>
+                                    <Content>
+                                        <p>
+                                            @((MarkupString)@_strContentDialog)
+                                        </p>
+                                    </Content>
+                                </DialogTemplates>
+                                <DialogEvents OnOpen="@DialogOpen" Closed="@DialogClose"></DialogEvents>
+                                <DialogButtons>
+
+                                </DialogButtons>
+                            </SfDialog>
+                        </CardContent>
+                        <CardFooter>
+                            <CardFooterContent>
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Success"
+                                           Href="@RouteFor.Request"
+                                           Class="mr-2">
+                                    Back To Request & Approval Page
+                                </MudButton>
+                                @if (authorizeContext.User.HasPermission(Permissions.KpiEnterprise_Catalog_Approval))
+                                {
+                                    @if (_request.IsApproved == "Waiting For Approval")
+                                    {
+                                        <MudButton Variant="Variant.Filled"
+                                                   Color="Color.Primary"
+                                                   OnClick="@(() => OnClickBtnApproved(context))"
+                                                   ButtonType="MudBlazor.ButtonType.Submit">
+                                            @CommonDisplayTextFor.Approved
+                                        </MudButton>
+                                        <MudButton Variant="Variant.Filled"
+                                                   Color="Color.Error"
+                                                   OnClick="@(() => OnClickBtnRejected(context))"
+                                                   ButtonType="MudBlazor.ButtonType.Submit">
+                                            Reject
+                                        </MudButton>
+                                    }
+                                }
+                            </CardFooterContent>
+                        </CardFooter>
+                    </SfCard>
+                </EditForm>
+            }
+        }
+        else
+        {
+            <div class="d-flex justify-space-around mt-16">
+                <div>
+                    <MudText Typo="Typo.h2">Kode Perusahaan tidak terdaftar</MudText>
+                    <MudText Typo="Typo.body1">Aplikasi ini hanya bisa di akses untuk user dari KPI (Kilang Pertamina Indonesia)</MudText>
+                </div>
+                <div>
+                    <img src="img/unauthorized.png" alt="Unauthorized" width="300" />
+                </div>
+            </div>
+        }
+    </Authorized>
+</AuthorizeView> *@

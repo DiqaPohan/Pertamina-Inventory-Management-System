@@ -1,0 +1,49 @@
+@using Pertamina.SolutionTemplate.Bsui.Common.Pages.Errors
+@using Pertamina.SolutionTemplate.Bsui.Layouts
+@using Pertamina.SolutionTemplate.Bsui.Services.Authentication
+@using Pertamina.SolutionTemplate.Bsui.Services.Authentication.Components
+@using Syncfusion.Blazor;
+
+@inject IOptions<AuthenticationOptions> _authenticationOptions
+
+<link href="_content/Syncfusion.Blazor.Themes/bootstrap5.css" rel="stylesheet" />
+<link href="_content/Syncfusion.Blazor/styles/highcontrast.css" rel="stylesheet" />
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(Program).Assembly">
+        <Found Context="routeData">
+            @if (_authenticationOptions.Value.Provider is not AuthenticationProvider.None)
+            {
+                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                    <NotAuthorized>
+                        @{
+                            var identity = context.User.Identity;
+
+                            if (identity is null || !identity.IsAuthenticated)
+                            {
+                                <RedirectToLogin />
+                            }
+                            else
+                            {
+                                <Forbidden />
+                            }
+                        }
+                    </NotAuthorized>
+                    <Authorizing>
+                        <MudText Typo="Typo.h5">Checking with the @nameof(Services.Authorization) @CommonDisplayTextFor.Service. Please wait...</MudText>
+                    </Authorizing>
+                </AuthorizeRouteView>
+            }
+            else
+            {
+                <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                </RouteView>
+            }
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <NotFound />
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
+<script suppress-error="BL9992" src="_content/Syncfusion.Blazor.Core/scripts/syncfusion-blazor.min.js" type="text/javascript"></script>
