@@ -24,7 +24,7 @@ builder.Services.AddShared(builder.Configuration);
 builder.Services.AddClient(builder.Configuration);
 builder.Services.AddBsui(builder.Configuration);
 
-//SyncfusionLicenseProvider.RegisterLicense(builder.Configuration["Syncfusion:LicenseKey"]);
+//SyncfusionLicenseProvider.RegisterLicense(builder.Configuration["Syncfusion:LicenseKey"]); HEHEHE
 StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);
 
 var app = builder.Build();
