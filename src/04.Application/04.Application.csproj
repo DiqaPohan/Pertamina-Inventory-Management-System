@@ -26,6 +26,6 @@
     <ProjectReference Include="..\03.Shared\03.Shared.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Public\Commands\" />
+    <Folder Include="Public\" />
   </ItemGroup>
 </Project>

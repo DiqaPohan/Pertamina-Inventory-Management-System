@@ -1,5 +1,8 @@
-﻿public enum RackStatus
+﻿namespace Shared.Common.Enums;
+
+public enum RackStatus
 {
-    Available = 0,
-    Full = 1
+    Empty = 1,      // Kosong
+    Used = 2,       // Terisi sebagian
+    Full = 3        // Penuh
 }

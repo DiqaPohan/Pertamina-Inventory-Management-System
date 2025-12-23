@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using Pertamina.SolutionTemplate.Shared.Common.Attributes;
 using Pertamina.SolutionTemplate.Shared.Common.Constants;
-using Pertamina.SolutionTemplate.Shared.Common.Enums;
+using Shared.Common.Enums;  
 
 namespace Pertamina.SolutionTemplate.Shared.Common.Requests;
 

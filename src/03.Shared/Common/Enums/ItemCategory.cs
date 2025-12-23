@@ -1,6 +1,8 @@
-﻿public enum ItemCategory
+﻿namespace Shared.Common.Enums;
+
+public enum ItemCategory
 {
-    Light = 0,
-    Medium = 1,
-    Heavy = 2
+    Light = 1,
+    Medium = 2,
+    Heavy = 3
 }
