@@ -13,7 +13,7 @@ public class Item : AuditableEntity
 	public string Unit { get; set; } = "pcs";
 
 	// Navigasi ke rak tempat barang ini disimpan
-	public virtual ICollection<RackSlot> RackSlots { get; set; } = new HashSet<RackSlot>();
+	public virtual ICollection<RackStatus> RackStatus { get; set; } = new HashSet<RackStatus>();
 
 	// Histori peminjaman barang ini
 	public virtual ICollection<LoanTransaction> LoanTransactions { get; set; } = new HashSet<LoanTransaction>();
