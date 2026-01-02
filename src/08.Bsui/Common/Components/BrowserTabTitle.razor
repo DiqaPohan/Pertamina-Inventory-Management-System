@@ -1,10 +1,10 @@
-﻿@using Pertamina.SolutionTemplate.Bsui.Services.AppInfo
+﻿@* @using Pertamina.SolutionTemplate.Bsui.Services.AppInfo *@
 
-@inject IOptions<AppInfoOptions> _appInfoOptions
+@* @inject IOptions<AppInfoOptions> _appInfoOptions *@
 
-@if (ChildContent is null)
+@* if (ChildContent is null)
 {
-    <PageTitle>@_appInfoOptions.Value.FullName</PageTitle>
+    <PageTitle>@_appInfoOptions.Value.FullName</PageTitle> 
 }
 else
 {
@@ -15,4 +15,4 @@ else
 @code {
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
-}
+} *@

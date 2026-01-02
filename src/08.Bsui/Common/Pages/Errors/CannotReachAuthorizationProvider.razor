@@ -1,9 +1,9 @@
-﻿@page "/Common/Pages/Errors/CannotReachAuthorizationProvider"
+﻿@* @page "/Common/Pages/Errors/CannotReachAuthorizationProvider"
 
 @using Microsoft.Extensions.Configuration
 
 @inject IConfiguration configuration
-@inject IOptions<Services.Authorization.AuthorizationOptions> _authorizationOptions
+@inject IOptions<Services.Authorization.AuthorizationOptions> _authorizationOptions 
 
 <div class="d-flex justify-space-around mt-16">
     <div>
@@ -17,4 +17,4 @@
     <div>
         <img src="img/unauthorized.png" alt="Unauthorized" width="300" />
     </div>
-</div>
+</div> *@
