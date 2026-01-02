@@ -46,13 +46,13 @@
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\07.Client\07.Client.csproj" />
+    <!-- <ProjectReference Include="..\07.Client\07.Client.csproj" /> -->
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Features\Excel\Import\Main\" />
-    <Folder Include="Features\Excel\Import\MasterData\" />
-    <Folder Include="Features\Excel\Upload\MasterData\Import\" />
-    <Folder Include="Features\Excel\Upload\MasterData\Save\" />
+    <Folder Include="Common\Constants\" />
+    <Folder Include="Common\Extensions\" />
+    <Folder Include="Features\" />
+    <Folder Include="Services\" />
     <Folder Include="wwwroot\ApexCharts\" />
     <Folder Include="wwwroot\DataTables\" />
     <Folder Include="wwwroot\Highcharts\" />
