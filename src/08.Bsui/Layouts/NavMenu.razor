@@ -1,48 +1,16 @@
 ﻿@* @using Pertamina.SolutionTemplate.Bsui.Features.Excel.Upload.Main.Constants *@
 <MudNavMenu>
-    <MudNavLink Icon="@Icons.Material.Filled.Home" Match="NavLinkMatch.All" Href="@CommonRouteFor.Index">@CommonDisplayTextFor.Home</MudNavLink>
-    @* <AuthorizeView>
-        <Authorized>
-            <MudNavGroup Icon="@Icons.Filled.TableChart"
-                         ExpandIcon="@Icons.Material.Filled.ExpandMore"
-                         Expanded="false"
-                         Title=@CommonDisplayTextFor.Catalog>
-                <MudNavLink Icon="@Icons.Filled.Home" Href="@Features.Catalog.Constants.RouteFor.Index">Overview</MudNavLink>
-                <MudNavLink Icon="@Icons.Filled.ViewModule" Href="@Features.Catalog.Constants.RouteFor.BuildingBlock">By Business Building Block</MudNavLink>
-                <MudNavLink Icon="@Icons.Filled.TableChart" Href="@Features.Catalog.Constants.RouteFor.Tabular">By List of Applications</MudNavLink>
-                <MudNavLink Icon="@Icons.Filled.Lock" Href="@Features.Catalog.Constants.RouteFor.Request">Request And Approval</MudNavLink>
-            </MudNavGroup>
-        </Authorized>
-    </AuthorizeView> *@
-    <MudNavGroup Icon="@Icons.Filled.TableChart"
-                 ExpandIcon="@Icons.Material.Filled.ExpandMore"
-                 Expanded="false"
-                 Title="Upload / Import Excel">
-        <MudNavLink Icon="@Icons.Filled.Home" Href="@RouteFor.Upload">Upload File Excel</MudNavLink>
-        <MudNavGroup Icon="@Icons.Filled.TableChart"
-                     ExpandIcon="@Icons.Material.Filled.ExpandMore"
-                     Expanded="false"
-                     Title="Konfigurasi Raw Upload">
-            <MudNavLink Icon="@Icons.Filled.Home" Href="@Features.Excel.MasterData.Constants.RouteFor.LembarKerja">Konfigurasi Lembar Kerja</MudNavLink>
-            <MudNavLink Icon="@Icons.Filled.Home" Href="@Features.Excel.MasterData.Constants.RouteFor.Group">Konfigurasi Group</MudNavLink>
-            <MudNavLink Icon="@Icons.Filled.Home" Href="@Features.Excel.MasterData.Constants.RouteFor.Validasi">Konfigurasi Validasi</MudNavLink>
-            <MudNavLink Icon="@Icons.Filled.Home" Href="@Features.Excel.MasterData.Constants.RouteFor.ShareFolder">Konfigurasi ShareFolder</MudNavLink>
-        </MudNavGroup>
-        <MudNavGroup Icon="@Icons.Filled.TableChart"
-                     ExpandIcon="@Icons.Material.Filled.ExpandMore"
-                     Expanded="false"
-                     Title="Konfigurasi Import">
-            <MudNavLink Icon="@Icons.Filled.Home" Href="@Features.Excel.MasterData.Constants.RouteFor.LembarKerja">Konfigurasi Lembar Kerja</MudNavLink>
-            <MudNavLink Icon="@Icons.Filled.Home" Href="@Features.Excel.MasterData.Constants.RouteFor.Group">Konfigurasi Group</MudNavLink>
-            <MudNavLink Icon="@Icons.Filled.Home" Href="@Features.Excel.MasterData.Constants.RouteFor.Validasi">Konfigurasi Validasi</MudNavLink>
-        </MudNavGroup>
-        <MudNavGroup Icon="@Icons.Filled.TableChart"
-                     ExpandIcon="@Icons.Material.Filled.ExpandMore"
-                     Expanded="false"
-                     Title="Konfigurasi Save">
-            <MudNavLink Icon="@Icons.Filled.Home" Href="@Features.Excel.MasterData.Constants.RouteFor.LembarKerja">Konfigurasi Lembar Kerja</MudNavLink>
-            <MudNavLink Icon="@Icons.Filled.Home" Href="@Features.Excel.MasterData.Constants.RouteFor.Group">Konfigurasi Group</MudNavLink>
-            <MudNavLink Icon="@Icons.Filled.Home" Href="@Features.Excel.MasterData.Constants.RouteFor.Validasi">Konfigurasi Validasi</MudNavLink>
-        </MudNavGroup>
-    </MudNavGroup>
+    <MudNavLink Icon="@Icons.Material.Filled.Home" Href="/" Class="my-3 mt-8">
+        Home
+    </MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Filled.Assignment" Href="Peminjaman" Class="my-3">
+        Peminjaman Barang
+    </MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Filled.Inventory2" Href="Inventory" Class="my-3">
+        Inventory
+    </MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Rounded.GridView" Href="Rak" Class="my-3">
+        View Rak
+    </MudNavLink>
+    <MudSpacer />
 </MudNavMenu>
