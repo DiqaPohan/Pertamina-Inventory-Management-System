@@ -15,6 +15,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Data\Commands\**" />
+    <Compile Remove="Public\Commands\**" />
+    <EmbeddedResource Remove="Data\Commands\**" />
+    <EmbeddedResource Remove="Public\Commands\**" />
+    <None Remove="Data\Commands\**" />
+    <None Remove="Public\Commands\**" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="10.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.1.34" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
@@ -24,9 +32,5 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\01.Base\01.Base.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Data\Commands\UpdateData\" />
-    <Folder Include="Public\Commands\" />
   </ItemGroup>
 </Project>
