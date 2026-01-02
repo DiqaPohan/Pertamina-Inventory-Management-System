@@ -3,7 +3,8 @@ namespace Domain.Entities;
 using Pertamina.SolutionTemplate.Domain.Abstracts;
 using Shared.Common.Enums;
 
-public class StorageItem : AuditableEntity
+
+public class InventoryItem : AuditableEntity
 {
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
