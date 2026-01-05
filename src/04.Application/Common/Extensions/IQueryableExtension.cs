@@ -284,7 +284,7 @@ public static class IQueryableExtension
 
         var methodName = sortOrder switch
         {
-            SortOrder.Desc => "OrderByDescending",
+            SortOrder.Descending => "OrderByDescending",
             _ => "OrderBy"
         };
 
