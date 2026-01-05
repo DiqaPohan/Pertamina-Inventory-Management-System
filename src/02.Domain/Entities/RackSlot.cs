@@ -3,18 +3,16 @@ namespace Domain.Entities;
 using Pertamina.SolutionTemplate.Domain.Abstracts;
 using Shared.Common.Enums;
 
-public class Item : AuditableEntity
+public class RackSlot : AuditableEntity // Harus RackSlot, bukan Item!
 {
-	public string Name { get; set; } = string.Empty;
-	public string? Description { get; set; }
-	public ItemCategory Category { get; set; }
-	public int TotalStock { get; set; }
-	public int AvailableStock { get; set; }
-	public string Unit { get; set; } = "pcs";
+    public string RackCode { get; set; } = string.Empty; // Contoh: RAK-A01
+    public int PositionX { get; set; }
+    public int PositionY { get; set; }
 
-	// Navigasi ke rak tempat barang ini disimpan
-	public virtual ICollection<RackStatus> RackStatus { get; set; } = new HashSet<RackStatus>();
+    // Status rak pake Enum RackStatus (Empty/Full)
+    public RackStatus Status { get; set; }
 
-	// Histori peminjaman barang ini
-	public virtual ICollection<LoanTransaction> LoanTransactions { get; set; } = new HashSet<LoanTransaction>();
+    // Relasi balik ke Item
+    public Guid? ItemId { get; set; }
+    public virtual Item? StoredItem { get; set; }
 }

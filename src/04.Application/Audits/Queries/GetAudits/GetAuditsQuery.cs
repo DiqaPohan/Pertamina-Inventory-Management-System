@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Application.Services.Persistence;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using FluentValidation;
 using MediatR;
@@ -7,13 +8,12 @@ using Microsoft.Extensions.Options;
 using Pertamina.SolutionTemplate.Application.Common.Attributes;
 using Pertamina.SolutionTemplate.Application.Common.Extensions;
 using Pertamina.SolutionTemplate.Application.Common.Mappings;
-using Pertamina.SolutionTemplate.Application.Services.Persistence;
 using Pertamina.SolutionTemplate.Domain.Entities;
 using Pertamina.SolutionTemplate.Shared.Audits.Options;
 using Pertamina.SolutionTemplate.Shared.Audits.Queries.GetAudits;
-using Pertamina.SolutionTemplate.Shared.Common.Enums;
 using Pertamina.SolutionTemplate.Shared.Common.Responses;
 using Pertamina.SolutionTemplate.Shared.Services.Authorization.Constants;
+using Shared.Common.Enums;
 
 namespace Pertamina.SolutionTemplate.Application.Audits.Queries.GetAudits;
 
