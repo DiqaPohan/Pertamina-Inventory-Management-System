@@ -5,7 +5,7 @@ using AutoMapper.Internal;
 using AutoMapper.QueryableExtensions;
 using Pertamina.SolutionTemplate.Application.Common.Models;
 using Pertamina.SolutionTemplate.Domain.Abstracts;
-using Pertamina.SolutionTemplate.Shared.Common.Enums;
+using Shared.Common.Enums;
 using Pertamina.SolutionTemplate.Shared.Common.Extensions;
 
 namespace Pertamina.SolutionTemplate.Application.Common.Extensions;
