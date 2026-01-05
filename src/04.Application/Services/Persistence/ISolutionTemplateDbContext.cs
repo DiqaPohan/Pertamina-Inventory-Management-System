@@ -1,5 +1,7 @@
 ﻿using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Pertamina.SolutionTemplate.Domain.Entities;
+
 
 namespace Application.Services.Persistence;
 

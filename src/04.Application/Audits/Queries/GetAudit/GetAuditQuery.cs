@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Pertamina.SolutionTemplate.Application.Common.Attributes;
 using Pertamina.SolutionTemplate.Application.Common.Exceptions;
 using Pertamina.SolutionTemplate.Application.Common.Mappings;
-using Pertamina.SolutionTemplate.Application.Services.Persistence;
+using Application.Services.Persistence;
 using Pertamina.SolutionTemplate.Domain.Entities;
 using Pertamina.SolutionTemplate.Shared.Audits.Constants;
 using Pertamina.SolutionTemplate.Shared.Audits.Queries.GetAudit;

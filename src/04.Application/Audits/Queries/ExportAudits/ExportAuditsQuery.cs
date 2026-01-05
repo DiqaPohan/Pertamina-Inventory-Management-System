@@ -4,7 +4,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Pertamina.SolutionTemplate.Application.Common.Attributes;
 using Pertamina.SolutionTemplate.Application.Services.DateAndTime;
-using Pertamina.SolutionTemplate.Application.Services.Persistence;
+using Application.Services.Persistence;
 using Pertamina.SolutionTemplate.Shared.Audits.Queries.ExportAudits;
 using Pertamina.SolutionTemplate.Shared.Common.Constants;
 using Pertamina.SolutionTemplate.Shared.Services.Authorization.Constants;

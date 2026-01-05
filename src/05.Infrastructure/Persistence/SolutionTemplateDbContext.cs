@@ -1,12 +1,19 @@
-﻿// Di dalam class SolutionTemplateDbContext
-public DbSet<Item> Items => Set<Item>();
-public DbSet<RackSlot> RackSlots => Set<RackSlot>();
-public DbSet<LoanTransaction> LoanTransactions => Set<LoanTransaction>();
+﻿using Domain.Entities; // Pastikan namespace ini benar
+using Microsoft.EntityFrameworkCore;
+using Pertamina.SolutionTemplate.Domain.Entities;
+using Shared.Common.Enums;
 
-protected override void OnModelCreating(ModelBuilder modelBuilder)
+namespace Application.Services.Persistence;
+
+public interface ISolutionTemplateDbContext
 {
-    base.OnModelCreating(modelBuilder);
+    // Tambahkan Entitas Inventory Baru
+    DbSet<Item> Items { get; }
+    DbSet<RackSlot> RackSlots { get; }
+    DbSet<LoanTransaction> LoanTransactions { get; }
 
-    // Menerapkan konfigurasi dari assembly ini (Langkah selanjutnya)
-    modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+    // Audit tetap biarkan ada
+    DbSet<Audit> Audits { get; }
+
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
