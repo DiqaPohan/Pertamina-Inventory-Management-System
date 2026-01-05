@@ -7,10 +7,10 @@
 <MudSnackbarProvider />
 
 <MudLayout>
-    <MudAppBar Elevation="1" Class="custom-appbar">
+    <MudAppBar Elevation="0" Class="custom-appbar" Style="border-bottom: solid 1px #dbdbdb">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <div class="logo"></div>
-        <MudText Typo="Typo.h6" Class="ml-3">Pertamina Inventory System</MudText>
+        @* <MudText Typo="Typo.h6" Class="ml-3">Pertamina Inventory System</MudText> *@
 
         <MudSpacer />
 
