@@ -1,19 +1,31 @@
-﻿using Domain.Entities; // Pastikan namespace ini benar
+﻿using Application.Services.Persistence;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Pertamina.SolutionTemplate.Domain.Entities;
-using Shared.Common.Enums;
+using System.Reflection;
 
-namespace Application.Services.Persistence;
+namespace Infrastructure.Persistence;
 
-public interface ISolutionTemplateDbContext
+public class SolutionTemplateDbContext : DbContext, ISolutionTemplateDbContext
 {
-    // Tambahkan Entitas Inventory Baru
-    DbSet<Item> Items { get; }
-    DbSet<RackSlot> RackSlots { get; }
-    DbSet<LoanTransaction> LoanTransactions { get; }
+    // Pake DbContextOptions tanpa generic biar gak error CS0029 di file Anak
+    public SolutionTemplateDbContext(DbContextOptions options) : base(options)
+    {
+    }
 
-    // Audit tetap biarkan ada
-    DbSet<Audit> Audits { get; }
+    public DbSet<Item> Items => Set<Item>();
+    public DbSet<RackSlot> RackSlots => Set<RackSlot>();
+    public DbSet<LoanTransaction> LoanTransactions => Set<LoanTransaction>();
+    public DbSet<Audit> Audits => Set<Audit>();
 
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        base.OnModelCreating(modelBuilder);
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        return await base.SaveChangesAsync(cancellationToken);
+    }
 }
