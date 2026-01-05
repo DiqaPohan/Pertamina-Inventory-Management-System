@@ -1,0 +1,354 @@
+﻿/* ==================== GLOBAL STYLES ==================== */
+* {
+    box-sizing: border-box;
+}
+
+/* ==================== HEADER SECTION ==================== */
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.header-title {
+    font-weight: 700 !important;
+    color: #1a1a1a;
+    margin-bottom: 4px !important;
+}
+
+.header-subtitle {
+    color: #757575;
+}
+
+.btn-add {
+    height: 48px !important;
+    border-radius: 16px !important;
+    padding: 0 24px !important;
+    font-weight: 600 !important;
+    text-transform: none !important;
+}
+
+    .btn-add:hover {
+        box-shadow: 0 4px 12px rgba(25, 118, 210, 0.35) !important;
+    }
+
+/* ==================== SEARCH FIELD ==================== */
+.search-field {
+    margin-bottom: 32px;
+}
+
+    .search-field .mud-input-root {
+        border-radius: 12px !important;
+    }
+
+/* ==================== EMPTY STATE ==================== */
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    background: #fafafa;
+    border-radius: 16px;
+    margin-top: 40px;
+}
+
+.empty-icon {
+    color: #bdbdbd;
+    margin-bottom: 16px;
+}
+
+.empty-title {
+    color: #616161;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+}
+
+.empty-subtitle {
+    color: #9e9e9e;
+}
+
+/* ==================== ITEM CARD ==================== */
+.item-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+    .item-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+/* Image Section */
+.item-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.item-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.item-card:hover .item-image {
+    transform: scale(1.05);
+}
+
+.expire-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #d32f2f;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 2px 8px rgba(211, 47, 47, 0.4);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* Content Section */
+.item-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.item-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+    line-height: 1.4;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.item-rak {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex: 1;
+}
+
+.info-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #616161;
+    font-size: 14px;
+}
+
+.info-icon {
+    color: #9e9e9e;
+}
+
+.btn-detail {
+    margin-top: auto;
+    text-transform: none !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    height: 40px !important;
+}
+
+/* ==================== DIALOG STYLES ==================== */
+.add-dialog .mud-dialog-title {
+    padding: 24px 24px 16px !important;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.dialog-title {
+    font-weight: 700 !important;
+    color: #1a1a1a;
+}
+
+.dialog-content-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    padding: 24px 0;
+}
+
+/* Upload Section */
+.upload-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.image-upload-area {
+    width: 100%;
+    height: 320px;
+    border: 2px dashed #bdbdbd;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #fafafa;
+    position: relative;
+    overflow: hidden;
+}
+
+    .image-upload-area:hover {
+        border-color: #1976d2;
+        background: #f5f9ff;
+    }
+
+.upload-placeholder {
+    text-align: center;
+    color: #757575;
+    padding: 20px;
+}
+
+    .upload-placeholder .mud-icon-root {
+        color: #9e9e9e;
+        margin-bottom: 12px;
+    }
+
+.image-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.image-upload-area:hover .image-overlay {
+    opacity: 1;
+}
+
+/* Form Section */
+.form-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.mud-input-outlined {
+    border-radius: 10px !important;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 960px) {
+    .dialog-content-wrapper {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .image-upload-area {
+        height: 280px;
+    }
+
+    .header-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .btn-add {
+        width: 40%;
+    }
+}
+
+@media (max-width: 600px) {
+    .item-image-wrapper {
+        height: 180px;
+    }
+
+    .image-upload-area {
+        height: 240px;
+    }
+
+    .item-header {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .item-rak {
+        align-self: flex-start;
+    }
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.item-card {
+    animation: fadeIn 0.3s ease;
+}
+
+/* ==================== SNACKBAR CUSTOM ==================== */
+.mud-snackbar {
+    border-radius: 12px !important;
+}

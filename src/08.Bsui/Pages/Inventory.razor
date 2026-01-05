@@ -1,5 +1,199 @@
-﻿<h3>Inventory</h3>
+﻿@page "/inventory"
+@using MudBlazor
 
-@code {
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-12">
+    <!-- Header Section -->
+    <div class="header-section">
+        <div>
+            <MudText Typo="Typo.h4" Class="header-title" Style="font-weight:600; color: black; letter-spacing: -1px;">Master Inventory</MudText>
+            <MudText Typo="Typo.subtitle1" Style="color: rgba(0,0,0,0.5); font-weight: 400;">Kelola stok dan lokasi penyimpanan barang</MudText>
+        </div>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Size="Size.Large"
+                   OnClick="OpenAddDialog"
+                   DisableElevation="true"
+                   Class="pa-4"
+                   Style="border-radius: 12px;"
+        >
+                   
+            Tambah Barang
+        </MudButton>
+    </div>
 
-}
+    <!-- Search Bar -->
+    <MudTextField @bind-Value="_searchString"
+                  Immediate="true"
+                  Placeholder="Cari nama barang atau nomor rak..."
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  IconSize="Size.Medium"
+                  Class="mb-9"
+                  Style="border-radius: 32px"
+                  Variant="Variant.Outlined" />
+
+    <!-- Content Area -->
+    @if (!FilteredItems.Any())
+    {
+        <div class="empty-state">
+            <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Large" Class="empty-icon" />
+            <MudText Typo="Typo.h6" Class="empty-title">Tidak ada barang ditemukan</MudText>
+            <MudText Typo="Typo.body2" Class="empty-subtitle">Coba kata kunci pencarian lain</MudText>
+        </div>
+    }
+    else
+    {
+        <MudGrid Spacing="4">
+            @foreach (var item in FilteredItems)
+            {
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <div class="item-card" style="border: 1px solid RGB(0,0,0,0.1)">
+                        <div class="item-image-wrapper">
+                            <img src="@item.ImageUrl" alt="@item.Nama" class="item-image" />
+                            @if (item.IsExpiredSoon)
+                            {
+                                <div class="expire-badge">
+                                    <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Small" />
+                                    <span>SEGERA KELUARKAN</span>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="item-content">
+                            <div class="item-header">
+                                <h3 class="item-name">@item.Nama</h3>
+                                <span class="item-rak">@item.NoRak</span>
+                            </div>
+
+                            <div class="item-info">
+                                <div class="info-row">
+                                    <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Small" Class="info-icon" />
+                                    <span>@item.Stok @item.Satuan</span>
+                                </div>
+                                @if (item.ExpDate.HasValue)
+                                {
+                                    <div class="info-row">
+                                        <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="info-icon" />
+                                        <span>@item.ExpDate.Value.ToString("dd MMM yyyy")</span>
+                                    </div>
+                                }
+                            </div>
+
+                            <MudButton Variant="Variant.Text"
+                                       Color="Color.Primary"
+                                       FullWidth="true"
+                                       Class="btn-detail"
+                                       Href="@($"/inventory/detail/{item.Nama}")">
+                                Lihat Detail
+                            </MudButton>
+                        </div>
+                    </div>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+</MudContainer>
+
+<!-- Add Item Dialog -->
+<MudDialog @bind-IsVisible="_isAddDialogOpen" Options="_dialogOptions" Class="add-dialog">
+    <TitleContent>
+        <MudText Typo="Typo.h5" Class="dialog-title">Tambah Barang</MudText>
+    </TitleContent>
+    <DialogContent>
+        <div class="dialog-content-wrapper">
+            <!-- Image Upload Section -->
+            <div class="upload-section">
+                <MudText Typo="Typo.subtitle2" Class="mb-2">Gambar Barang</MudText>
+                <div class="image-upload-area" @onclick="TriggerFileInput">
+                    @if (!string.IsNullOrEmpty(_imagePreview))
+                    {
+                        <img src="@_imagePreview" alt="Preview" class="image-preview" />
+                        <div class="image-overlay">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Color="Color.Surface"
+                                           Size="Size.Large" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="upload-placeholder">
+                            <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Size="Size.Large" />
+                            <MudText Typo="Typo.body2">Klik untuk upload gambar</MudText>
+                            <MudText Typo="Typo.caption" Class="mt-1">JPG, PNG, max 5MB</MudText>
+                        </div>
+                    }
+                </div>
+                <InputFile id="fileInput" OnChange="HandleFileSelected" accept="image/*" style="display: none;" />
+
+                @if (!string.IsNullOrEmpty(_imagePreview))
+                {
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Error"
+                               StartIcon="@Icons.Material.Filled.Delete"
+                               OnClick="ClearImage"
+                               Class="mt-2"
+                               Size="Size.Small">
+                        Hapus Gambar
+                    </MudButton>
+                }
+            </div>
+
+            <!-- Form Fields -->
+            <div class="form-section">
+                <MudAutocomplete T="string"
+                                 Label="Nama Barang"
+                                 Value="_newItemName"
+                                 ValueChanged="OnItemNameChanged"
+                                 SearchFunc="@SearchExistingItems"
+                                 Placeholder="Ketik atau pilih nama barang..."
+                                 Variant="Variant.Outlined"
+                                 ResetValueOnEmptyText="false"
+                                 CoerceText="false"
+                                 CoerceValue="false"
+                                 Immediate="true"
+                                 DebounceInterval="300"
+                                 Required="true"
+                                 RequiredError="Nama barang wajib diisi"
+                                 Class="mb-4" />
+
+                <MudNumericField @bind-Value="_newItemQty"
+                                 Label="Jumlah"
+                                 Variant="Variant.Outlined"
+                                 Min="1"
+                                 Required="true"
+                                 RequiredError="Jumlah wajib diisi"
+                                 Class="mb-4" />
+
+                <MudTextField @bind-Value="_newItemRak"
+                              Label="Nomor Rak"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="Nomor rak wajib diisi"
+                              Placeholder="Contoh: A-01"
+                              Disabled="@_isRakAutoFilled"
+                              Class="mb-4" />
+
+                <MudDatePicker Label="Tanggal Kadaluarsa"
+                               @bind-Date="_newItemExpDate"
+                               Variant="Variant.Outlined"
+                               Editable="true"
+                               Placeholder="Pilih tanggal (opsional)" />
+            </div>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CancelDialog"
+                   Variant="Variant.Text">
+            Batal
+        </MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="HandleSubmit"
+                   Disabled="@(!IsFormValid)">
+            Simpan Barang
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudSnackbarProvider />
