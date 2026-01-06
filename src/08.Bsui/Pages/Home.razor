@@ -1,62 +1,66 @@
 ﻿@page "/"
 @using MudBlazor
 
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 <PageTitle>Pertamina Inventory System</PageTitle>
-<div class="bgHome"> 
-    <MudContainer MaxWidth="MaxWidth.Large" Class="content-wrapper">
-        <MudText Typo="Typo.h4" Style="font-weight:600; color: white">Welcome to </MudText>
-        <MudText Typo="Typo.h4" Style="font-weight:600; color: white">Pertamina Inventory System</MudText>
-        <MudText Typo="Typo.subtitle1" Class="mb-12" Style="color: white">What can we do for you?</MudText>
-        <MudStack Row="true">
-        <MudCard Class="my-5 pa-1 d-flex shadow-4 flex-column" Outlined="true" Style="width: 30%; height: auto; border-radius: 16px">
-            <MudCardHeader >
-                <CardHeaderAvatar>
-                    <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large" Style="background-color:#FD0017">
-                        <MudIcon Icon="@Icons.Material.Filled.Assignment" />
-                    </MudAvatar>
-                </CardHeaderAvatar>
-            </MudCardHeader>
-            <MudCardContent Class="d-flex flex-column justify-center ">
-                <MudText Typo="Typo.h5" Style="font-weight:700;">
-                    Peminjaman Barang 
-                </MudText>
-                <MudText Typo="Typo.subtitle1">Kamu bisa meminjam barang disini</MudText>
-            </MudCardContent>
-        </MudCard>
-        <MudCard Class="my-5 pa-1 d-flex shadow-4 flex-column" Outlined="true" Style="width: 30%; height: auto; border-radius: 16px">
-            <MudCardHeader>
-                <CardHeaderAvatar>
-                    <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large" Style="background-color:#0073FE">
-                        <MudIcon Icon="@Icons.Material.Filled.Inventory2" />
-                    </MudAvatar>
-                </CardHeaderAvatar>
-            </MudCardHeader>
-            <MudCardContent Class="d-flex flex-column justify-center ">
-                <MudText Typo="Typo.h5" Style="font-weight:700;">
-                    Inventory
-                </MudText>
-                <MudText Typo="Typo.subtitle1">Tempat semua barang disimpan</MudText>
-            </MudCardContent>
-        </MudCard>
-        <MudCard Class="my-5 pa-1 d-flex shadow-4 flex-column" Outlined="true" Style="width: 30%; height: auto; border-radius: 16px">
-            <MudCardHeader>
-                <CardHeaderAvatar>
-                    <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large" Style="background-color:#9FE400">
-                        <MudIcon Icon="@Icons.Material.Rounded.GridView" />
-                    </MudAvatar>
-                </CardHeaderAvatar>
-            </MudCardHeader>
-            <MudCardContent Class="d-flex flex-column justify-center ">
-                <MudText Typo="Typo.h5" Style="font-weight:700;">
-                    View Rak
-                </MudText>
-                <MudText Typo="Typo.subtitle1">Harap cek ketersediaan slot terlebih dahulu</MudText>
-            </MudCardContent>
-        </MudCard>
-        </MudStack>
-    </MudContainer>
-</div> 
-@code {
 
-}
+<div class="bgHome">
+    <MudContainer MaxWidth="MaxWidth.Large" Class="content-wrapper pb-12">
+        <div class="header-text mb-10 pa-8">
+            <MudText Typo="Typo.h3" Style="font-weight:600; color: black; letter-spacing: -1px;">
+                Welcome to <br /> Pertamina Inventory
+            </MudText>
+            <MudText Typo="Typo.h6" Style="color: rgba(0,0,0,0.5); font-weight: 400;">
+                What can we do for you today?
+            </MudText>
+        </div>
+
+        <MudStack Row="true" Spacing="4" Class="flex-wrap" Style="padding: 0 2rem 2rem 2rem">
+            <NavLink href="/Peminjaman" Class="card-link">
+                <MudCard Class="inventory-card" Outlined="true">
+                    <MudCardHeader>
+                        <MudAvatar Style="background-color:#FD0017; width: 70px; height: 70px;" Variant="Variant.Filled">
+                            <MudIcon Icon="@Icons.Material.Filled.Assignment" Style="color: white; font-size: 2.5rem;" />
+                        </MudAvatar>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.h5" Class="card-title">Peminjaman</MudText>
+                        <MudText Typo="Typo.body2" Class="card-desc">Proses peminjaman barang dengan cepat dan terdata.</MudText>
+                    </MudCardContent>
+                    <div class="card-footer-line" style="background-color: #FD0017"></div>
+                </MudCard>
+            </NavLink>
+
+            <NavLink href="/Inventory" Class="card-link">
+                <MudCard Class="inventory-card" Outlined="true">
+                    <MudCardHeader>
+                        <MudAvatar Style="background-color:#0073FE; width: 70px; height: 70px;" Variant="Variant.Filled" >
+                            <MudIcon Icon="@Icons.Material.Filled.Inventory2" Style="color: white; font-size: 2.5rem;"  />
+                        </MudAvatar>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.h5" Class="card-title">Inventory</MudText>
+                        <MudText Typo="Typo.body2" Class="card-desc">Cek ketersediaan stok barang secara real-time.</MudText>
+                    </MudCardContent>
+                    <div class="card-footer-line" style="background-color: #0073FE"></div>
+                </MudCard>
+            </NavLink>
+
+            <NavLink href="/Rak" Class="card-link">
+                <MudCard Class="inventory-card" Outlined="true">
+                    <MudCardHeader>
+                        <MudAvatar Style="background-color:#9FE400; width: 70px; height: 70px;" Variant="Variant.Filled">
+                            <MudIcon Icon="@Icons.Material.Rounded.GridView" Style="color: white; font-size: 2.5rem;" />
+                        </MudAvatar>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.h5" Class="card-title">View Rak</MudText>
+                        <MudText Typo="Typo.body2" Class="card-desc">Visualisasi posisi rak dan ketersediaan slot.</MudText>
+                    </MudCardContent>
+                    <div class="card-footer-line" style="background-color: #9FE400"></div>
+                </MudCard>
+            </NavLink>
+        </MudStack>
+
+
+    </MudContainer>
+</div>

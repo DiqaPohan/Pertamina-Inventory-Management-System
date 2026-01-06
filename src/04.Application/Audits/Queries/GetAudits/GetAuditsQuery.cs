@@ -60,7 +60,7 @@ public class GetAuditsQueryHandler : IRequestHandler<GetAuditsQuery, PaginatedLi
                 typeof(GetAuditsAudit),
                 _mapper.ConfigurationProvider,
                 nameof(GetAuditsAudit.Created),
-                SortOrder.Desc);
+                SortOrder.Descending);
 
         var result = await query
             .ProjectTo<GetAuditsAudit>(_mapper.ConfigurationProvider)
