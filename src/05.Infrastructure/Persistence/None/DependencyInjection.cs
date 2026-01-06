@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Pertamina.SolutionTemplate.Application.Services.Persistence;
+using Application.Services.Persistence;
 
 namespace Pertamina.SolutionTemplate.Infrastructure.Persistence.None;
 
