@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
-using Pertamina.SolutionTemplate.Application.Services.Persistence;
+using Application.Services.Persistence;
 using Pertamina.SolutionTemplate.Infrastructure.Persistence.Common.Constants;
 
 namespace Pertamina.SolutionTemplate.Infrastructure.Persistence.SqlServer;
