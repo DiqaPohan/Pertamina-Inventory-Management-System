@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Infrastructure.Persistence;
 using Pertamina.SolutionTemplate.Infrastructure.Persistence.MySql;
 using Pertamina.SolutionTemplate.Infrastructure.Persistence.SqlServer;
 using Pertamina.SolutionTemplate.Shared.Common.Constants;
@@ -73,7 +74,7 @@ public static class DatabaseMigration
 
                 break;
             case PersistenceProvider.MySql:
-                context = serviceProvider.GetRequiredService<MySqlSolutionTemplateDbContext>();
+                context = serviceProvider.GetRequiredService<MySqlServerSolutionTemplateDbContext>();
 
                 isMigrationNeeded = (await context.Database.GetPendingMigrationsAsync()).Any();
 
