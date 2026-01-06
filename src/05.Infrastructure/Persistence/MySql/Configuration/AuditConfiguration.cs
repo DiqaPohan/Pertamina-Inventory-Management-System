@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Pertamina.SolutionTemplate.Application.Services.Persistence;
+using Application.Services.Persistence;
 using Pertamina.SolutionTemplate.Base.ValueObjects;
 using Pertamina.SolutionTemplate.Domain.Entities;
 using Pertamina.SolutionTemplate.Infrastructure.Persistence.Common.Constants;

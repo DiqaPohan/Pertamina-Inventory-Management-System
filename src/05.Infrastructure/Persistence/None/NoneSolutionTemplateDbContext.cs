@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Application.Services.Persistence;
+using Domain.Entities; // Pake namespace Entities lu yang baru
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Pertamina.SolutionTemplate.Application.Services.Persistence;
 using Pertamina.SolutionTemplate.Domain.Entities;
 using Pertamina.SolutionTemplate.Shared.Common.Constants;
 
@@ -19,22 +20,10 @@ public class NoneSolutionTemplateDbContext : DbContext, ISolutionTemplateDbConte
     public DbSet<Audit> Audits => Set<Audit>();
     #endregion Essential Entities
 
-    #region Business Entities
-    public DbSet<Data> Data => Set<Data>();
-    public DbSet<RequestData> RequestData => Set<RequestData>();
-    //public DbSet<HistoricalAppPhase> HistoricalAppPhase => Set<HistoricalAppPhase>();
-    //public DbSet<DraftHistoricalAppPhase> DraftHistoricalAppPhase => Set<DraftHistoricalAppPhase>();
-    public DbSet<ApplicationArea> ApplicationArea => Set<ApplicationArea>();
-    public DbSet<ApplicationCapabilityLevel1> ApplicationCapabilityLevel1 => Set<ApplicationCapabilityLevel1>();
-    public DbSet<ApplicationCapabilityLevel2> ApplicationCapabilityLevel2 => Set<ApplicationCapabilityLevel2>();
-    public DbSet<ApplicationCriticality> ApplicationCriticality => Set<ApplicationCriticality>();
-    public DbSet<ApplicationLicense> ApplicationLicense => Set<ApplicationLicense>();
-    public DbSet<ApplicationPackage> ApplicationPackage => Set<ApplicationPackage>();
-    public DbSet<ApplicationStatus> ApplicationStatus => Set<ApplicationStatus>();
-    public DbSet<ApplicationType> ApplicationType => Set<ApplicationType>();
-    public DbSet<ApplicationUserManagement> ApplicationUserManagement => Set<ApplicationUserManagement>();
-    public DbSet<ApplicationUtilization> ApplicationUtilization => Set<ApplicationUtilization>();
-
+    #region Business Entities - SINKRON DENGAN INVENTORY
+    public DbSet<Item> Items => Set<Item>();
+    public DbSet<RackSlot> RackSlots => Set<RackSlot>();
+    public DbSet<LoanTransaction> LoanTransactions => Set<LoanTransaction>();
     #endregion Business Entities
 
     private void LogWarning()
@@ -42,10 +31,10 @@ public class NoneSolutionTemplateDbContext : DbContext, ISolutionTemplateDbConte
         _logger.LogWarning("{ServiceName} is set to None.", $"{nameof(Persistence)} {CommonDisplayTextFor.Service}");
     }
 
-    public Task<int> SaveChangesAsync<THandler>(THandler handler, CancellationToken cancellationToken) where THandler : notnull
+    // Perhatikan signature method ini harus sama persis dengan Interface
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         LogWarning();
-
         return Task.FromResult(0);
     }
 }

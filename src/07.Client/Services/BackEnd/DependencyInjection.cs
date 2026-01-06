@@ -14,7 +14,7 @@ public static class DependencyInjection
         #endregion Essential Services
 
         #region Business Services
-        services.AddTransient<DataService>();
+        //services.AddTransient<DataService>();
         #endregion Business Services
 
         return services;
