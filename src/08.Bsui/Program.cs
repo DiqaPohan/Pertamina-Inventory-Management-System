@@ -16,6 +16,7 @@ Console.WriteLine($"Starting Pertamina Inventory...");
 
 var builder = WebApplication.CreateBuilder(args);
 //builder.Host.UseLoggingService();
+builder.Services.AddScoped<Pertamina.SolutionTemplate.Bsui.ViewModels.InventoryViewModel>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
