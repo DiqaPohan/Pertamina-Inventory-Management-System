@@ -15,6 +15,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Libraries\**" />
+    <Content Remove="Libraries\**" />
+    <EmbeddedResource Remove="Libraries\**" />
+    <None Remove="Libraries\**" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Blazored.FluentValidation" Version="2.2.0" />
     <PackageReference Include="Darnton.Blazor.DeviceInterop" Version="0.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.6" />
@@ -46,6 +52,7 @@
     <Folder Include="Common\Constants\" />
     <Folder Include="Common\Extensions\" />
     <Folder Include="Features\" />
+    <Folder Include="NewFolder\NewFolder\" />
     <Folder Include="Services\" />
     <Folder Include="wwwroot\ApexCharts\" />
     <Folder Include="wwwroot\DataTables\" />
