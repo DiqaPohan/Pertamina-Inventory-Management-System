@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Pertamina.SolutionTemplate.Domain.Entities;
 using System.Reflection;
 
-namespace Infrastructure.Persistence;
+namespace Pertamina.SolutionTemplate.Infrastructure.Persistence;
 
 public class SolutionTemplateDbContext : DbContext, ISolutionTemplateDbContext
 {

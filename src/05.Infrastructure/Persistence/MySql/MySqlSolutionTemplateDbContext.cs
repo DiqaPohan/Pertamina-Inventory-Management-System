@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Infrastructure.Persistence;
+using Pertamina.SolutionTemplate.Infrastructure.Persistence;
 
 namespace Pertamina.SolutionTemplate.Infrastructure.Persistence.MySql;
 

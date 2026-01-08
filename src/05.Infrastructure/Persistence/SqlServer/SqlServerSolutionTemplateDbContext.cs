@@ -1,19 +1,20 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Infrastructure.Persistence;
-using Pertamina.SolutionTemplate.Infrastructure.Persistence.SqlServer.Configuration;
+using Pertamina.SolutionTemplate.Infrastructure.Persistence;
 
 namespace Pertamina.SolutionTemplate.Infrastructure.Persistence.SqlServer;
 
 public class SqlServerSolutionTemplateDbContext : SolutionTemplateDbContext
 {
     public SqlServerSolutionTemplateDbContext(DbContextOptions<SqlServerSolutionTemplateDbContext> options)
-        : base(options)
-    {
-    }
+        : base(options) { }
 
-    protected override void OnModelCreating(ModelBuilder builder)
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        builder.ApplyConfigurationsFromAssembly(typeof(AuditConfiguration).Assembly);
-        base.OnModelCreating(builder);
+        // KITA PAKSA DI SINI UNTUK MENGGUNAKAN LOCALDB
+        if (!optionsBuilder.IsConfigured)
+        {
+            // Gunakan tanda @ agar karakter backslash \ tidak dianggap error
+            optionsBuilder.UseSqlServer(@"Server=(localdb)\MSSQLLocalDB;Database=DB_Inventory_Project;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True;");
+        }
     }
 }
