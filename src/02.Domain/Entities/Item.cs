@@ -1,7 +1,7 @@
 namespace Domain.Entities;
 
 using Pertamina.SolutionTemplate.Domain.Abstracts;
-using Shared.Common.Enums;
+using Pertamina.SolutionTemplate.Shared.Common.Enums;
 
 
 public class Item : AuditableEntity
