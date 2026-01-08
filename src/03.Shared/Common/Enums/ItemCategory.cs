@@ -1,4 +1,4 @@
-﻿namespace Shared.Common.Enums;
+﻿namespace Pertamina.SolutionTemplate.Shared.Common.Enums;
 
 public enum ItemCategory
 {

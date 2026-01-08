@@ -1,5 +1,7 @@
 ﻿@page "/inventory"
 @using MudBlazor
+@using Pertamina.SolutionTemplate.Bsui.ViewModels
+@using Pertamina.SolutionTemplate.Shared.Common.Enums;
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-12">
     <!-- Header Section -->
@@ -12,18 +14,16 @@
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    Size="Size.Large"
-                   OnClick="OpenAddDialog"
+                   OnClick="ViewModel.OpenAddDialog"
                    DisableElevation="true"
                    Class="pa-4"
-                   Style="border-radius: 12px;"
-        >
-                   
+                   Style="border-radius: 12px;">
             Tambah Barang
         </MudButton>
     </div>
 
     <!-- Search Bar -->
-    <MudTextField @bind-Value="_searchString"
+    <MudTextField @bind-Value="ViewModel.SearchString"
                   Immediate="true"
                   Placeholder="Cari nama barang atau nomor rak..."
                   Adornment="Adornment.Start"
@@ -34,7 +34,7 @@
                   Variant="Variant.Outlined" />
 
     <!-- Content Area -->
-    @if (!FilteredItems.Any())
+    @if (!ViewModel.FilteredItems.Any())
     {
         <div class="empty-state">
             <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Large" Class="empty-icon" />
@@ -45,9 +45,9 @@
     else
     {
         <MudGrid Spacing="4">
-            @foreach (var item in FilteredItems)
+            @foreach (var item in ViewModel.FilteredItems)
             {
-                <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudItem xs="12" sm="6" md="4" lg="3" Class="py-6">
                     <div class="item-card" style="border: 1px solid RGB(0,0,0,0.1)">
                         <div class="item-image-wrapper">
                             <img src="@item.ImageUrl" alt="@item.Nama" class="item-image" />
@@ -63,6 +63,21 @@
                         <div class="item-content">
                             <div class="item-header">
                                 <h3 class="item-name">@item.Nama</h3>
+                                <!-- [MODIFIKASI] Menampilkan Chip Kategori -->
+                                <div class="d-flex justify-end mt-1">
+                                    @switch (item.ItemCategory)
+                                    {
+                                        case ItemCategory.Light:
+                                            <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Outlined" Style="margin:0;">Light</MudChip>
+                                            break;
+                                        case ItemCategory.Medium:
+                                            <MudChip T="string" Color="Color.Warning" Size="Size.Small" Variant="Variant.Outlined" Style="margin:0;">Medium</MudChip>
+                                            break;
+                                        case ItemCategory.Heavy:
+                                            <MudChip T="string" Color="Color.Error" Size="Size.Small" Variant="Variant.Outlined" Style="margin:0;">Heavy</MudChip>
+                                            break;
+                                    }
+                                </div>
                                 <span class="item-rak">@item.NoRak</span>
                             </div>
 
@@ -96,7 +111,7 @@
 </MudContainer>
 
 <!-- Add Item Dialog -->
-<MudDialog @bind-IsVisible="_isAddDialogOpen" Options="_dialogOptions" Class="add-dialog">
+<MudDialog @bind-IsVisible="ViewModel.IsAddDialogOpen" Options="ViewModel.DialogOptions" Class="add-dialog">
     <TitleContent>
         <MudText Typo="Typo.h5" Class="dialog-title">Tambah Barang</MudText>
     </TitleContent>
@@ -105,10 +120,10 @@
             <!-- Image Upload Section -->
             <div class="upload-section">
                 <MudText Typo="Typo.subtitle2" Class="mb-2">Gambar Barang</MudText>
-                <div class="image-upload-area" @onclick="TriggerFileInput">
-                    @if (!string.IsNullOrEmpty(_imagePreview))
+                <div class="image-upload-area" @onclick="ViewModel.TriggerFileInput">
+                    @if (!string.IsNullOrEmpty(ViewModel.ImagePreview))
                     {
-                        <img src="@_imagePreview" alt="Preview" class="image-preview" />
+                        <img src="ViewModel.ImagePreview" alt="Preview" class="image-preview" />
                         <div class="image-overlay">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                            Color="Color.Surface"
@@ -124,14 +139,14 @@
                         </div>
                     }
                 </div>
-                <InputFile id="fileInput" OnChange="HandleFileSelected" accept="image/*" style="display: none;" />
+                <InputFile id="fileInput" OnChange="ViewModel.HandleFileSelected" accept="image/*" style="display: none;" />
 
-                @if (!string.IsNullOrEmpty(_imagePreview))
+                @if (!string.IsNullOrEmpty(ViewModel.ImagePreview))
                 {
                     <MudButton Variant="Variant.Text"
                                Color="Color.Error"
                                StartIcon="@Icons.Material.Filled.Delete"
-                               OnClick="ClearImage"
+                               OnClick="ViewModel.ClearImage"
                                Class="mt-2"
                                Size="Size.Small">
                         Hapus Gambar
@@ -143,9 +158,9 @@
             <div class="form-section">
                 <MudAutocomplete T="string"
                                  Label="Nama Barang"
-                                 Value="_newItemName"
-                                 ValueChanged="OnItemNameChanged"
-                                 SearchFunc="@SearchExistingItems"
+                                 Value="ViewModel.NewItemName"
+                                 ValueChanged="ViewModel.OnItemNameChanged"
+                                 SearchFunc=ViewModel.SearchExistingItems"
                                  Placeholder="Ketik atau pilih nama barang..."
                                  Variant="Variant.Outlined"
                                  ResetValueOnEmptyText="false"
@@ -156,8 +171,19 @@
                                  Required="true"
                                  RequiredError="Nama barang wajib diisi"
                                  Class="mb-4" />
+                <MudSelect T="ItemCategory"
+                           Label="Kategori Barang"
+                           @bind-Value="ViewModel.NewItemCategory"
+                           Variant="Variant.Outlined"
+                           AnchorOrigin="Origin.BottomCenter"
+                           AdornmentIcon="@Icons.Material.Filled.Category"
+                           Class="mb-4">
+                    <MudSelectItem Value="ItemCategory.Light">Light (Ringan)</MudSelectItem>
+                    <MudSelectItem Value="ItemCategory.Medium">Medium (Sedang)</MudSelectItem>
+                    <MudSelectItem Value="ItemCategory.Heavy">Heavy (Berat)</MudSelectItem>
+                </MudSelect>
 
-                <MudNumericField @bind-Value="_newItemQty"
+                <MudNumericField @bind-Value="ViewModel.NewItemQty"
                                  Label="Jumlah"
                                  Variant="Variant.Outlined"
                                  Min="1"
@@ -165,17 +191,17 @@
                                  RequiredError="Jumlah wajib diisi"
                                  Class="mb-4" />
 
-                <MudTextField @bind-Value="_newItemRak"
+                <MudTextField @bind-Value="ViewModel.NewItemRak"
                               Label="Nomor Rak"
                               Variant="Variant.Outlined"
                               Required="true"
                               RequiredError="Nomor rak wajib diisi"
                               Placeholder="Contoh: A-01"
-                              Disabled="@_isRakAutoFilled"
+                              Disabled="ViewModel.IsRakAutoFilled"
                               Class="mb-4" />
 
                 <MudDatePicker Label="Tanggal Kadaluarsa"
-                               @bind-Date="_newItemExpDate"
+                               @bind-Date="ViewModel.NewItemExpDate"
                                Variant="Variant.Outlined"
                                Editable="true"
                                Placeholder="Pilih tanggal (opsional)" />
@@ -183,14 +209,14 @@
         </div>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="CancelDialog"
+        <MudButton OnClick="ViewModel.CancelDialog"
                    Variant="Variant.Text">
             Batal
         </MudButton>
         <MudButton Color="Color.Primary"
                    Variant="Variant.Filled"
-                   OnClick="HandleSubmit"
-                   Disabled="@(!IsFormValid)">
+                   OnClick="ViewModel.HandleSubmit"
+                   Disabled="@(!ViewModel.IsFormValid)">
             Simpan Barang
         </MudButton>
     </DialogActions>

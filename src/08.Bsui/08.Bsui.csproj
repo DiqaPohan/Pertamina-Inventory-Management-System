@@ -52,6 +52,7 @@
     <Folder Include="Common\Constants\" />
     <Folder Include="Common\Extensions\" />
     <Folder Include="Features\" />
+    <Folder Include="NewFolder\NewFolder\" />
     <Folder Include="Services\" />
     <Folder Include="wwwroot\ApexCharts\" />
     <Folder Include="wwwroot\DataTables\" />
