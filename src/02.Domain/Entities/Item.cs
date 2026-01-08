@@ -12,7 +12,8 @@ public class Item : AuditableEntity
     public int TotalStock { get; set; }
     public int AvailableStock { get; set; }
     public string Unit { get; set; } = "pcs";
+    public string? ImageUrl { get; set; }
+    public DateTime? ExpiryDate { get; set; }
 
-    // Relasi ke slot rak (Satu barang bisa di banyak tempat)
     public virtual ICollection<RackSlot> RackSlots { get; set; } = new HashSet<RackSlot>();
 }
