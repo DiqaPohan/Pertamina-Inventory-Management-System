@@ -1,0 +1,40 @@
+﻿/* Sekarang selectornya langsung class HTML biasa.
+   Tidak perlu ::deep karena div-nya ada di file .razor ini langsung.
+*/
+
+.card-stat {
+    background-color: white; /* Penting: karena div defaultnya transparan */
+    border-radius: 16px;
+    transition: transform 0.2s;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+    .card-stat:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+    }
+
+.border-l-4-success {
+    border-left: 4px solid var(--mud-palette-success);
+}
+
+.border-l-4-error {
+    border-left: 4px solid var(--mud-palette-error);
+}
+
+.border-l-4-warning {
+    border-left: 4px solid var(--mud-palette-warning);
+}
+
+.border-1 {
+    border: 1px solid #e2e8f0;
+}
+
+.rounded-xl {
+    border-radius: 16px !important;
+}
+
+/* Helper baru untuk background putih di section log */
+.bg-white {
+    background-color: white;
+}

@@ -1,6 +1,8 @@
 @using Microsoft.AspNetCore.Components.Routing
 @using Pertamina.SolutionTemplate.Bsui.Layouts
-
+<head>
+    <link href="Pertamina.SolutionTemplate.Bsui.styles.css" rel="stylesheet" />
+</head>
 <Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
