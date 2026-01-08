@@ -28,9 +28,10 @@ public static class DependencyInjection
         services.AddScoped<ISolutionTemplateDbContext>(provider => provider.GetRequiredService<SqlServerSolutionTemplateDbContext>());
 
         healthChecksBuilder.AddSqlServer(
+
             connectionString: sqlServerOptions.ConnectionString,
             name: $"{nameof(Persistence)} {nameof(PersistenceOptions.Provider)} ({nameof(SqlServer)})");
 
-        return services;
+        return services; 
     }
 }
