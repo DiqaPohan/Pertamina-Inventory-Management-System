@@ -1,0 +1,132 @@
+﻿@page "/Dashboard"
+@using MudBlazor
+@using Pertamina.SolutionTemplate.Bsui.ViewModels
+@using Pertamina.SolutionTemplate.Bsui.Models
+
+<!--
+    NOTE: Sekarang kita pakai struktur <div> seperti di Inventory.razor.
+    CSS Isolation akan langsung jalan tanpa ::deep.
+-->
+
+<PageTitle>Dashboard - Pertamina Inventory</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-8">
+
+    <!-- Header -->
+    <div class="mb-8">
+        <MudText Typo="Typo.h4" Style="font-weight:600; color:#2d3748;">Dashboard</MudText>
+        <MudText Typo="Typo.subtitle1" Style="color:#718096;">Ringkasan aktivitas inventaris bulan ini</MudText>
+    </div>
+
+    @if (ViewModel == null || ViewModel.IsLoading)
+    {
+        <div class="d-flex justify-center align-center" style="height: 50vh;">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+        </div>
+    }
+    else
+    {
+        <!-- SECTION 1: STATISTIC CARDS -->
+        <MudGrid Spacing="4" Class="mb-8">
+            <!-- Card 1: Total Tersimpan -->
+            <MudItem xs="12" sm="6" md="3">
+                <!-- Ubah MudPaper jadi div class="card-stat" -->
+                <div class="card-stat pa-6 d-flex flex-column gap-2"
+                     style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white;">
+                    <div class="d-flex justify-space-between align-start">
+                        <div>
+                            <MudText Typo="Typo.h3" Style="font-weight:700;">@ViewModel.TotalItemsStored</MudText>
+                            <MudText Typo="Typo.body2" Class="mt-1" Style="opacity:0.9;">Total Barang Tersimpan</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Large" Style="opacity:0.8;" />
+                    </div>
+                </div>
+            </MudItem>
+
+            <!-- Card 2: Barang Masuk (Bulan Ini) -->
+            <MudItem xs="12" sm="6" md="3">
+                <div class="card-stat pa-6 d-flex flex-column gap-2 border-l-4-success">
+                    <div class="d-flex justify-space-between align-start">
+                        <div>
+                            <MudText Typo="Typo.h3" Color="Color.Success" Style="font-weight:700;">@ViewModel.ItemsInThisMonth</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Barang Masuk (Bulan Ini)</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.Input" Color="Color.Success" Size="Size.Large" />
+                    </div>
+                </div>
+            </MudItem>
+
+            <!-- Card 3: Barang Keluar (Bulan Ini) -->
+            <MudItem xs="12" sm="6" md="3">
+                <div class="card-stat pa-6 d-flex flex-column gap-2 border-l-4-error">
+                    <div class="d-flex justify-space-between align-start">
+                        <div>
+                            <MudText Typo="Typo.h3" Color="Color.Error" Style="font-weight:700;">@ViewModel.ItemsOutThisMonth</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Barang Keluar (Bulan Ini)</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.Output" Color="Color.Error" Size="Size.Large" />
+                    </div>
+                </div>
+            </MudItem>
+
+            <!-- Card 4: Sedang Dipinjam -->
+            <MudItem xs="12" sm="6" md="3">
+                <div class="card-stat pa-6 d-flex flex-column gap-2 border-l-4-warning">
+                    <div class="d-flex justify-space-between align-start">
+                        <div>
+                            <MudText Typo="Typo.h3" Color="Color.Warning" Style="font-weight:700;">@ViewModel.ItemsOnLoan</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Sedang Dipinjam</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.AssignmentInd" Color="Color.Warning" Size="Size.Large" />
+                    </div>
+                </div>
+            </MudItem>
+        </MudGrid>
+
+        <!-- SECTION 2: ACTIVITY LOGS -->
+        <!-- Ubah MudPaper jadi div juga biar konsisten -->
+        <div class="pa-6 rounded-xl border-1 bg-white">
+            <div class="d-flex justify-space-between align-center mb-4">
+                <div>
+                    <MudText Typo="Typo.h6" Style="font-weight:600;">Aktivitas Terkini</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Menampilkan 20 aktivitas terakhir</MudText>
+                </div>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward">Lihat Semua Log</MudButton>
+            </div>
+
+            <MudTable Items="@ViewModel.RecentLogs" Hover="true" Elevation="0" Dense="true" Breakpoint="Breakpoint.Sm">
+                <HeaderContent>
+                    <MudTh>Waktu</MudTh>
+                    <MudTh>User</MudTh>
+                    <MudTh>Aksi</MudTh>
+                    <MudTh>Barang</MudTh>
+                    <MudTh>Detail</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Waktu">
+                        <MudText Typo="Typo.body2" Class="fw-bold">@context.Timestamp.ToString("HH:mm")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Timestamp.ToString("dd MMM yyyy")</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="User">
+                        <div class="d-flex align-center">
+                            <MudAvatar Size="Size.Small" Color="Color.Tertiary" Class="mr-2">@context.UserName.Substring(0, 1)</MudAvatar>
+                            <MudText Typo="Typo.body2">@context.UserName</MudText>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Aksi">
+                        <MudChip T="string" Color="@context.BadgeColor" Size="Size.Small" Icon="@context.Icon" Label="true">
+                            @context.ActionType
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Barang">
+                        <MudText Typo="Typo.body2" Style="font-weight:500;">@context.ItemName</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Detail">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@context.Details</MudText>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </div>
+    }
+
+</MudContainer>
