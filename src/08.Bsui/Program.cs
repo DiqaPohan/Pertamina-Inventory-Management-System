@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 // using Pertamina.SolutionTemplate.Shared;
 // using Pertamina.SolutionTemplate.Shared.Common.Constants;
 using MudBlazor.Services;
+using Pertamina.SolutionTemplate.Bsui.ViewModels;
 using Syncfusion.Blazor;
 using Syncfusion.Licensing;
 
@@ -17,6 +18,8 @@ Console.WriteLine($"Starting Pertamina Inventory...");
 var builder = WebApplication.CreateBuilder(args);
 //builder.Host.UseLoggingService();
 builder.Services.AddScoped<Pertamina.SolutionTemplate.Bsui.ViewModels.InventoryViewModel>();
+
+builder.Services.AddScoped<DashboardViewModel>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
