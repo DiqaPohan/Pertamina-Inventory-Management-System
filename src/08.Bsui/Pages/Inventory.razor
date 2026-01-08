@@ -1,6 +1,7 @@
 ﻿@page "/inventory"
 @using MudBlazor
-@using Pertamina.SolutionTemplate.Bsui.ViewModels;
+@using Pertamina.SolutionTemplate.Bsui.ViewModels
+@using Pertamina.SolutionTemplate.Shared.Common.Enums;
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-12">
     <!-- Header Section -->
@@ -62,6 +63,21 @@
                         <div class="item-content">
                             <div class="item-header">
                                 <h3 class="item-name">@item.Nama</h3>
+                                <!-- [MODIFIKASI] Menampilkan Chip Kategori -->
+                                <div class="d-flex justify-end mt-1">
+                                    @switch (item.ItemCategory)
+                                    {
+                                        case ItemCategory.Light:
+                                            <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Outlined" Style="margin:0;">Light</MudChip>
+                                            break;
+                                        case ItemCategory.Medium:
+                                            <MudChip T="string" Color="Color.Warning" Size="Size.Small" Variant="Variant.Outlined" Style="margin:0;">Medium</MudChip>
+                                            break;
+                                        case ItemCategory.Heavy:
+                                            <MudChip T="string" Color="Color.Error" Size="Size.Small" Variant="Variant.Outlined" Style="margin:0;">Heavy</MudChip>
+                                            break;
+                                    }
+                                </div>
                                 <span class="item-rak">@item.NoRak</span>
                             </div>
 
@@ -155,6 +171,17 @@
                                  Required="true"
                                  RequiredError="Nama barang wajib diisi"
                                  Class="mb-4" />
+                <MudSelect T="ItemCategory"
+                           Label="Kategori Barang"
+                           @bind-Value="ViewModel.NewItemCategory"
+                           Variant="Variant.Outlined"
+                           AnchorOrigin="Origin.BottomCenter"
+                           AdornmentIcon="@Icons.Material.Filled.Category"
+                           Class="mb-4">
+                    <MudSelectItem Value="ItemCategory.Light">Light (Ringan)</MudSelectItem>
+                    <MudSelectItem Value="ItemCategory.Medium">Medium (Sedang)</MudSelectItem>
+                    <MudSelectItem Value="ItemCategory.Heavy">Heavy (Berat)</MudSelectItem>
+                </MudSelect>
 
                 <MudNumericField @bind-Value="ViewModel.NewItemQty"
                                  Label="Jumlah"

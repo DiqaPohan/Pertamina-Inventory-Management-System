@@ -2,6 +2,8 @@
 using Microsoft.JSInterop;
 using MudBlazor;
 using Pertamina.SolutionTemplate.Bsui.Models; // Pastikan namespace DTO benar
+using Shared.Common.Enums;
+using Pertamina.SolutionTemplate.Shared.Common.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +39,7 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
         public string ImagePreview { get; set; } = "";
         public string UploadedImageBase64 { get; set; } = "";
         public bool IsRakAutoFilled { get; set; } = false;
+        public ItemCategory NewItemCategory { get; set; } = ItemCategory.Light;
 
         // --- DATA ---
         public List<InventoryItemDto> Items { get; private set; } = new();
@@ -73,14 +76,40 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
 
         public async Task LoadDataAsync()
         {
-            await Task.Delay(100); // Simulasi
-            // Dummy Data
+            await Task.Delay(100);
+
+            // [UPDATE] Tambahkan data dummy Category
             Items = new List<InventoryItemDto>
             {
-                new InventoryItemDto { Nama = "Helm Safety", NoRak = "A-01", Stok = 10 },
-                new InventoryItemDto { Nama = "Rompi", NoRak = "B-02", Stok = 50 }
+                new InventoryItemDto
+                {
+                    Nama = "Helm Safety Red",
+                    NoRak = "A-01",
+                    Stok = 25,
+                    ItemCategory = ItemCategory.Light, // [BARU]
+                    ImageUrl = "https://images.unsplash.com/photo-1590650153855-d9e808231d41?q=80&w=400",
+                    ExpDate = DateTime.Now.AddDays(15)
+                },
+                new InventoryItemDto
+                {
+                    Nama = "Genset Portable 5000W",
+                    NoRak = "Z-99",
+                    Stok = 2,
+                    ItemCategory = ItemCategory.Heavy, // [BARU]
+                    ImageUrl = "https://images.unsplash.com/photo-1581094288338-2314dddb79a7?q=80&w=400",
+                    ExpDate = null
+                },
+                new InventoryItemDto
+                {
+                    Nama = "Rompi Proyek",
+                    NoRak = "B-12",
+                    Stok = 50,
+                    ItemCategory = ItemCategory.Medium, // [BARU]
+                    ImageUrl = "https://images.unsplash.com/photo-1581094288338-2314dddb79a7?q=80&w=400",
+                    ExpDate = DateTime.Now.AddYears(1)
+                }
             };
-            NotifyStateChanged(); // <--- PANGGIL INI, JANGAN StateHasChanged()
+            NotifyStateChanged();
         }
 
         public void HandleSubmit()
@@ -95,6 +124,7 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
             if (existing != null)
             {
                 existing.Stok += NewItemQty;
+                existing.ItemCategory = NewItemCategory;
                 _snackbar.Add("Stok bertambah!", Severity.Success);
             }
             else
@@ -105,7 +135,8 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
                     Stok = NewItemQty,
                     NoRak = NewItemRak,
                     ExpDate = NewItemExpDate,
-                    ImageUrl = ImagePreview
+                    ImageUrl = ImagePreview,
+                    ItemCategory = NewItemCategory
                 });
                 _snackbar.Add("Barang baru!", Severity.Success);
             }
@@ -127,6 +158,7 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
                 // Auto-fill nomor rak dari data existing
                 NewItemRak = existingItem.NoRak;
                 IsRakAutoFilled = true;
+                NewItemCategory = existingItem.ItemCategory;
 
                 // Auto-fill image preview jika ada
                 if (!string.IsNullOrEmpty(existingItem.ImageUrl))
@@ -139,6 +171,7 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
                 // Barang baru - reset rak & enable input
                 NewItemRak = "";
                 IsRakAutoFilled = false;
+                NewItemCategory = ItemCategory.Light;
             }
 
             NotifyStateChanged();
@@ -213,7 +246,14 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
 
         private void ResetForm()
         {
-            NewItemName = ""; NewItemQty = 1; NewItemRak = ""; ImagePreview = "";
+            NewItemName = "";
+            NewItemQty = 1;
+            NewItemRak = "";
+            NewItemExpDate = null;
+            ImagePreview = "";
+            UploadedImageBase64 = "";
+            IsRakAutoFilled = false;
+            NewItemCategory = ItemCategory.Light;
         }
     }
 }
