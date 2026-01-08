@@ -1,5 +1,6 @@
 ﻿using System;
-
+using Shared.Common.Enums;
+using Pertamina.SolutionTemplate.Shared.Common.Enums; 
 namespace Pertamina.SolutionTemplate.Bsui.Models
 {
     public class InventoryItemDto
@@ -9,6 +10,7 @@ namespace Pertamina.SolutionTemplate.Bsui.Models
         public int Stok { get; set; }
         public string Satuan { get; set; } = "Pcs";
         public string ImageUrl { get; set; } = "";
+        public ItemCategory ItemCategory { get; set; } = ItemCategory.Light;
         public DateTime? ExpDate { get; set; }
         public bool IsExpiredSoon => ExpDate.HasValue && (ExpDate.Value - DateTime.Now).TotalDays < 30;
     }
