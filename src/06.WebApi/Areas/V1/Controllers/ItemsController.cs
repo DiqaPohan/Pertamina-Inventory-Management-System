@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Pertamina.SolutionTemplate.Application.Items.Commands.CreateItem;
 using Pertamina.SolutionTemplate.Application.Items.Commands.DeleteItem;
 using Pertamina.SolutionTemplate.Application.Items.Commands.UpdateItem;
+using Pertamina.SolutionTemplate.Application.Items.Commands.ConfirmPlacement; // Tambahin ini
 using Pertamina.SolutionTemplate.Application.Items.Queries.GetItemById;
 using Pertamina.SolutionTemplate.Application.Items.Queries.GetItems;
+using Pertamina.SolutionTemplate.Application.Items.Queries.GetPendingItems; // Tambahin ini
 using Pertamina.SolutionTemplate.Shared.Common.Responses;
 
 namespace Pertamina.SolutionTemplate.WebApi.Areas.V1.Controllers;
@@ -16,13 +18,20 @@ namespace Pertamina.SolutionTemplate.WebApi.Areas.V1.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class ItemsController : ApiControllerBase
 {
-    // READ ALL
+    // READ ALL (Biasa dipake Admin)
     [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<PaginatedListResponse<Item>>> GetItems([FromQuery] GetItemsQuery query)
     {
-        // Mediator sekarang akan mengembalikan PaginatedListResponse<Item>
         return await Mediator.Send(query);
+    }
+
+    // READ PENDING (Buat rekomendasi di Form Pegawai)
+    [AllowAnonymous]
+    [HttpGet("pending")]
+    public async Task<ActionResult<List<PendingItemDto>>> GetPendingItems()
+    {
+        return await Mediator.Send(new GetPendingItemsQuery());
     }
 
     // READ BY ID
@@ -33,27 +42,33 @@ public class ItemsController : ApiControllerBase
         return result != null ? Ok(result) : NotFound();
     }
 
-    // CREATE
+    // CREATE (Oleh Admin, default status bakal Pending)
     [AllowAnonymous]
     [HttpPost]
     public async Task<ActionResult<Guid>> Create([FromBody] CreateItemCommand command)
     {
         try
         {
-            // Validasi manual sederhana biar tidak crash db
             if (string.IsNullOrEmpty(command.Name))
                 return BadRequest("Nama barang tidak boleh kosong.");
 
-            // Mediator sekarang mengembalikan Guid (sesuai kode CreateItemCommandHandler mu)
             var resultId = await Mediator.Send(command);
-
             return Ok(resultId);
         }
         catch (Exception ex)
         {
-            // Tangkap error biar debug TIDAK BERHENTI (Crash)
             return StatusCode(500, $"Internal Server Error: {ex.Message}");
         }
+    }
+
+    // CONFIRM PLACEMENT (Fitur utama Pegawai setelah Scan QR)
+    [AllowAnonymous]
+    [HttpPut("{id}/confirm-placement")]
+    public async Task<ActionResult<bool>> ConfirmPlacement(Guid id)
+    {
+        // Logic: Ngubah status Pending -> Active berdasarkan ID yang dipilih
+        var result = await Mediator.Send(new ConfirmPlacementCommand(id));
+        return result ? Ok(result) : NotFound("Barang gagal diaktifkan.");
     }
 
     // UPDATE

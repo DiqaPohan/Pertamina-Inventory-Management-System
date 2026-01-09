@@ -10,11 +10,15 @@ public class SqlServerSolutionTemplateDbContext : SolutionTemplateDbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        // KITA PAKSA DI SINI UNTUK MENGGUNAKAN LOCALDB
-        if (!optionsBuilder.IsConfigured)
-        {
-            // Gunakan tanda @ agar karakter backslash \ tidak dianggap error
-            optionsBuilder.UseSqlServer(@"Server=(localdb)\MSSQLLocalDB;Database=DB_Inventory_Project;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True;");
-        }
+        // JANGAN di-hardcode di sini bro, biarkan options dari Factory yang bekerja
+        base.OnConfiguring(optionsBuilder);
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // PAKSA PAKAI SKEMA SolutionTemplate AGAR TIDAK JADI dbo
+        modelBuilder.HasDefaultSchema("SolutionTemplate");
     }
 }

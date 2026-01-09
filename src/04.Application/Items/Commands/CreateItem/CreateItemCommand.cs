@@ -9,8 +9,8 @@ namespace Pertamina.SolutionTemplate.Application.Items.Commands.CreateItem;
 public class CreateItemCommand : IRequest<Guid>
 {
     public string Name { get; set; } = string.Empty;
-    public string? Description { get; set; }
     public ItemCategory Category { get; set; }
+    public string? RackId { get; set; }
     public int TotalStock { get; set; }
     public int AvailableStock { get; set; }
     public string Unit { get; set; } = "pcs";
@@ -34,8 +34,9 @@ public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, Guid>
         {
             // ID tidak perlu diisi manual, biasanya auto-generate Guid.NewGuid() di constructor Entity
             Name = request.Name,
-            Description = request.Description,
             Category = request.Category,
+            RackId = request.RackId,
+            Status = ItemStatus.Pending,
             TotalStock = request.TotalStock,
             AvailableStock = request.AvailableStock,
             Unit = request.Unit,
