@@ -39,10 +39,11 @@ builder.Services.Configure<Microsoft.AspNetCore.Components.Server.CircuitOptions
 builder.Services.AddMudServices();
 builder.Services.AddSyncfusionBlazor();
 
+// Register named HttpClient used by InventoryViewModel
 builder.Services.AddHttpClient("Pertamina.SolutionTemplate.WebApi", client =>
 {
-    var url = builder.Configuration["ApiBaseUrl"] ?? "https://localhost:59908";
-    client.BaseAddress = new Uri(url);
+    client.BaseAddress = new Uri("https://localhost:59908/"); // match your WebApi url
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);

@@ -46,6 +46,8 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
         public string UploadedImageBase64 { get; set; } = "";
         public bool IsRakAutoFilled { get; set; } = false;
         public ItemCategory NewItemCategory { get; set; } = ItemCategory.Light;
+        // add near other properties
+        public bool IsImageLoaded { get; private set; } = false;
 
         public List<InventoryItemDto> Items { get; private set; } = new();
         public bool IsFormValid => !string.IsNullOrWhiteSpace(NewItemName) && NewItemQty > 0;
@@ -71,7 +73,6 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
                 client.Timeout = TimeSpan.FromSeconds(30);
 
                 var response = await client.GetAsync("api/v1/items?PageNumber=1&PageSize=100");
-
                 if (!response.IsSuccessStatusCode)
                 {
                     _snackbar.Add($"Gagal memuat data. Status: {response.StatusCode}", Severity.Error);
@@ -80,39 +81,34 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
 
                 var jsonString = await response.Content.ReadAsStringAsync();
 
-                // 1. OPSI PENTING UNTUK MENCEGAH STACK OVERFLOW KARENA CIRCULAR REFERENCE
+                // Diagnostic logging - always print so we can inspect payload
+                Console.WriteLine($"DEBUG: /api/v1/items response length: {(jsonString?.Length ?? 0)}");
+                if (!string.IsNullOrEmpty(jsonString))
+                    Console.WriteLine("DEBUG: /api/v1/items response snippet: " +
+                                      (jsonString.Length > 2000 ? jsonString.Substring(0, 2000) + " ...[truncated]" : jsonString));
+
+                // Json options: allow string enums and case-insensitive property matching
                 var options = new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true,
                     PropertyNamingPolicy = null,
                     NumberHandling = JsonNumberHandling.AllowReadingFromString,
-                    ReferenceHandler = ReferenceHandler.Preserve // ATAU IgnoreCycles. Preserve lebih aman jika backend pakai Newtonsoft default.
-                };
-
-                // Coba gunakan IgnoreCycles dulu karena System.Text.Json defaultnya strict
-                var optionsIgnoreCycles = new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                    PropertyNamingPolicy = null,
                     ReferenceHandler = ReferenceHandler.IgnoreCycles
                 };
+                options.Converters.Add(new JsonStringEnumConverter());
 
                 PaginatedListResponse<ItemApiDto>? result = null;
 
                 try
                 {
-                    // Coba deserialize dengan IgnoreCycles
-                    result = JsonSerializer.Deserialize<PaginatedListResponse<ItemApiDto>>(jsonString, optionsIgnoreCycles);
-                }
-                catch (JsonException)
-                {
-                    // Jika gagal, coba fallback ke List array langsung (siapa tahu struktur beda)
-                    try
+                    result = JsonSerializer.Deserialize<PaginatedListResponse<ItemApiDto>>(jsonString, options);
+
+                    if (result == null)
                     {
-                        var listResult = JsonSerializer.Deserialize<List<ItemApiDto>>(jsonString, optionsIgnoreCycles);
+                        // Try root-array fallback
+                        var listResult = JsonSerializer.Deserialize<List<ItemApiDto>>(jsonString, options);
                         if (listResult != null)
                         {
-                            // Gunakan konstruktor karena PaginatedListResponse mungkin immutable
                             result = new PaginatedListResponse<ItemApiDto>
                             {
                                 Items = listResult,
@@ -120,11 +116,51 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
                             };
                         }
                     }
-                    catch (Exception exInner)
+                }
+                catch (JsonException jex)
+                {
+                    // Detailed diagnostics to inspect JSON shape
+                    Console.WriteLine("JsonException while parsing /api/v1/items: " + jex.Message);
+                    Console.WriteLine("JsonException StackTrace: " + jex.StackTrace);
+
+                    try
                     {
-                        Console.WriteLine($"Gagal parsing JSON (Fallback): {exInner.Message}");
-                        // Jangan throw, biarkan list kosong agar app tidak crash
+                        using var doc = JsonDocument.Parse(jsonString);
+                        var root = doc.RootElement;
+                        Console.WriteLine($"DEBUG: JSON root kind: {root.ValueKind}");
+
+                        if (root.ValueKind == JsonValueKind.Object)
+                        {
+                            Console.WriteLine("DEBUG: Root object properties:");
+                            foreach (var prop in root.EnumerateObject().Take(20))
+                                Console.WriteLine($" - {prop.Name} (kind={prop.Value.ValueKind})");
+                        }
+                        else if (root.ValueKind == JsonValueKind.Array)
+                        {
+                            Console.WriteLine("DEBUG: Root is array; first element:");
+                            if (root.GetArrayLength() > 0)
+                            {
+                                var first = root[0];
+                                if (first.ValueKind == JsonValueKind.Object)
+                                {
+                                    foreach (var prop in first.EnumerateObject().Take(20))
+                                        Console.WriteLine($" - {prop.Name} (kind={prop.Value.ValueKind})");
+                                }
+                                else
+                                {
+                                    Console.WriteLine($" - first element kind: {first.ValueKind}");
+                                }
+                            }
+                        }
                     }
+                    catch (Exception exDoc)
+                    {
+                        Console.WriteLine("Failed to parse JSON with JsonDocument: " + exDoc.Message);
+                    }
+                }
+                catch (Exception exInner)
+                {
+                    Console.WriteLine("Unexpected parse error: " + exInner.Message);
                 }
 
                 if (result?.Items != null)
@@ -144,7 +180,6 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
             }
             catch (Exception ex)
             {
-                // Tangkap SEMUA exception agar Blazor sirkuit tidak putus
                 Console.WriteLine($"FATAL ERROR LoadData: {ex}");
                 _snackbar.Add($"Error sistem: {ex.Message}", Severity.Error);
             }
@@ -349,75 +384,79 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
 
         // Replace the existing HandleFileSelected method with this safer, more-logged implementation.
         public byte[]? UploadedImageBytes { get; private set; } = null;
+        // replace HandleFileSelected with this minimal safe reader for debugging
+        // Replace the existing HandleFileSelected method in this file with the code below.
         public async Task HandleFileSelected(InputFileChangeEventArgs e)
         {
             var file = e.File;
-            Console.WriteLine($"HandleFileSelected invoked. file={(file != null ? $"{file.Name}, size={file.Size}" : "null")}");
+            Console.WriteLine($"HandleFileSelected start. file={(file != null ? $"{file.Name}, size={file.Size}" : "null")}");
             if (file == null) return;
 
             if (!file.ContentType.StartsWith("image/"))
             {
                 _snackbar.Add("File harus berupa gambar", Severity.Warning);
-                Console.WriteLine("Rejected: not image");
                 return;
             }
 
             try
             {
-                const long maxPreviewBytes = 200 * 1024;   // 200 KB preview
-                const long maxReadBytes = 2 * 1024 * 1024; // 2 MB read limit
-
-                Console.WriteLine($"File.Size={file.Size}, maxReadBytes={maxReadBytes}");
+                const long maxReadBytes = 4 * 1024 * 1024; // 4 MB limit for safety
                 if (file.Size > maxReadBytes)
                 {
-                    _snackbar.Add("File terlalu besar (>2MB). Gunakan file lebih kecil.", Severity.Warning);
-                    Console.WriteLine($"Rejected file {file.Name} size={file.Size} bytes > {maxReadBytes}");
+                    _snackbar.Add("File terlalu besar (>4MB). Gunakan file lebih kecil.", Severity.Warning);
                     UploadedImageBytes = null;
                     ImagePreview = "";
                     NotifyStateChanged();
                     return;
                 }
 
-                IBrowserFile toRead = file;
-                try
-                {
-                    Console.WriteLine("Attempting RequestImageFileAsync (resize)...");
-                    toRead = await file.RequestImageFileAsync(file.ContentType, 800, 800);
-                    Console.WriteLine("RequestImageFileAsync succeeded");
-                }
-                catch (Exception exResize)
-                {
-                    Console.WriteLine($"RequestImageFileAsync failed: {exResize.Message}. Falling back to original file stream.");
-                    toRead = file;
-                }
-
-                using var stream = toRead.OpenReadStream(maxAllowedSize: maxReadBytes);
+                // Simple buffered read (NO resizing, NO decoding)
+                using var stream = file.OpenReadStream(maxAllowedSize: maxReadBytes);
                 using var ms = new MemoryStream();
-                Console.WriteLine("Copying stream...");
-                await stream.CopyToAsync(ms);
+                var buffer = new byte[81920];
+                int read;
+                Console.WriteLine("Start copying stream (buffered)...");
+                while ((read = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length))) > 0)
+                {
+                    ms.Write(buffer, 0, read);
+                }
                 var bytes = ms.ToArray();
-                Console.WriteLine($"Copied {bytes.Length} bytes from stream.");
+                Console.WriteLine($"Buffered copy done. bytes={bytes.Length}");
 
                 UploadedImageBytes = bytes;
 
-                if (bytes.Length <= maxPreviewBytes)
+                // Create small preview only when safe
+                try
                 {
-                    var base64 = Convert.ToBase64String(bytes);
-                    ImagePreview = $"data:{file.ContentType};base64,{base64}";
-                    Console.WriteLine("Preview set (base64)");
+                    if (bytes.Length <= 200 * 1024) // 200KB preview threshold
+                    {
+                        UploadedImageBase64 = Convert.ToBase64String(bytes);
+                        ImagePreview = $"data:{file.ContentType};base64,{UploadedImageBase64}";
+                        Console.WriteLine("Preview created (base64)");
+                    }
+                    else
+                    {
+                        UploadedImageBase64 = "";
+                        ImagePreview = "";
+                        _snackbar.Add("Preview disabled for large images. Image will be uploaded on save.", Severity.Info);
+                        Console.WriteLine("Preview disabled due to size");
+                    }
                 }
-                else
+                catch (Exception exPreview)
                 {
+                    Console.WriteLine($"Preview creation failed: {exPreview}");
+                    UploadedImageBase64 = "";
                     ImagePreview = "";
-                    _snackbar.Add("Preview disabled for large images. Gambar akan diupload saat menyimpan.", Severity.Info);
-                    Console.WriteLine("Preview disabled due to size");
                 }
+                IsImageLoaded = UploadedImageBytes != null && UploadedImageBytes.Length > 0;
+                Console.WriteLine($"IsImageLoaded={IsImageLoaded}, UploadedImageBytesLength={(UploadedImageBytes?.Length ?? 0)}");
 
                 NotifyStateChanged();
             }
+
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in HandleFileSelected (catch): {ex}");
+                Console.WriteLine($"HandleFileSelected exception: {ex}");
                 _snackbar.Add("Gagal memproses gambar", Severity.Error);
             }
         }
