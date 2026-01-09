@@ -2,6 +2,7 @@
 @using MudBlazor
 @using Pertamina.SolutionTemplate.Bsui.ViewModels
 @using Pertamina.SolutionTemplate.Shared.Common.Enums;
+@attribute [AllowAnonymous]
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-12">
     <!-- Header Section -->
@@ -123,7 +124,7 @@
                 <div class="image-upload-area" @onclick="ViewModel.TriggerFileInput">
                     @if (!string.IsNullOrEmpty(ViewModel.ImagePreview))
                     {
-                        <img src="ViewModel.ImagePreview" alt="Preview" class="image-preview" />
+                        <img src="@ViewModel.ImagePreview" alt="Preview" class="image-preview" />
                         <div class="image-overlay">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                            Color="Color.Surface"

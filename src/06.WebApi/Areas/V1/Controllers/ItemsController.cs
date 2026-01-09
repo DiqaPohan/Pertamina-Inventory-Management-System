@@ -1,20 +1,28 @@
-﻿using Domain.Entities;
+﻿using Asp.Versioning;
+using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Pertamina.SolutionTemplate.Application.Items.Commands.CreateItem;
 using Pertamina.SolutionTemplate.Application.Items.Commands.DeleteItem;
 using Pertamina.SolutionTemplate.Application.Items.Commands.UpdateItem;
-using Pertamina.SolutionTemplate.Application.Items.Queries.GetItems;
 using Pertamina.SolutionTemplate.Application.Items.Queries.GetItemById;
+using Pertamina.SolutionTemplate.Application.Items.Queries.GetItems;
+using Pertamina.SolutionTemplate.Shared.Common.Responses;
 
 namespace Pertamina.SolutionTemplate.WebApi.Areas.V1.Controllers;
 
+[Area("V1")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
 public class ItemsController : ApiControllerBase
 {
     // READ ALL
+    [AllowAnonymous]
     [HttpGet]
-    public async Task<ActionResult<List<Item>>> GetItems()
+    public async Task<ActionResult<PaginatedListResponse<Item>>> GetItems([FromQuery] GetItemsQuery query)
     {
-        return await Mediator.Send(new GetItemsQuery());
+        // Mediator sekarang akan mengembalikan PaginatedListResponse<Item>
+        return await Mediator.Send(query);
     }
 
     // READ BY ID
@@ -26,10 +34,26 @@ public class ItemsController : ApiControllerBase
     }
 
     // CREATE
+    [AllowAnonymous]
     [HttpPost]
-    public async Task<ActionResult<Guid>> Create(CreateItemCommand command)
+    public async Task<ActionResult<Guid>> Create([FromBody] CreateItemCommand command)
     {
-        return await Mediator.Send(command);
+        try
+        {
+            // Validasi manual sederhana biar tidak crash db
+            if (string.IsNullOrEmpty(command.Name))
+                return BadRequest("Nama barang tidak boleh kosong.");
+
+            // Mediator sekarang mengembalikan Guid (sesuai kode CreateItemCommandHandler mu)
+            var resultId = await Mediator.Send(command);
+
+            return Ok(resultId);
+        }
+        catch (Exception ex)
+        {
+            // Tangkap error biar debug TIDAK BERHENTI (Crash)
+            return StatusCode(500, $"Internal Server Error: {ex.Message}");
+        }
     }
 
     // UPDATE

@@ -1,12 +1,17 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
-using Pertamina.SolutionTemplate.Bsui.Models; // Pastikan namespace DTO benar
-using Shared.Common.Enums;
+using Pertamina.SolutionTemplate.Bsui.Models;
 using Pertamina.SolutionTemplate.Shared.Common.Enums;
+using Pertamina.SolutionTemplate.Shared.Common.Responses;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization; // PENTING: Untuk ReferenceHandler
 using System.Threading.Tasks;
 
 namespace Pertamina.SolutionTemplate.Bsui.ViewModels
@@ -15,36 +20,35 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
     {
         private readonly ISnackbar _snackbar;
         private readonly IJSRuntime _jsRuntime;
-
-
-        // Ini adalah "Trigger" pengganti StateHasChanged
+        private readonly IHttpClientFactory _httpClientFactory;
+        private const string ApiClientName = "Pertamina.SolutionTemplate.WebApi";
         public Action? OnStateChange { get; set; }
 
-        public InventoryViewModel(ISnackbar snackbar, IJSRuntime jsRuntime)
+        public InventoryViewModel(ISnackbar snackbar, IJSRuntime jsRuntime, IHttpClientFactory httpClientFactory)
         {
             _snackbar = snackbar;
             _jsRuntime = jsRuntime;
+            _httpClientFactory = httpClientFactory;
         }
 
-        // --- STATE UI (Properties) ---
         public string SearchString { get; set; } = "";
         public bool IsAddDialogOpen { get; set; }
         public DialogOptions DialogOptions { get; } = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+        public bool IsLoading { get; private set; } = false;
 
-        // --- FORM FIELDS ---
+        public Guid? EditingItemId { get; set; }
         public string NewItemName { get; set; } = "";
         public int NewItemQty { get; set; } = 1;
         public string NewItemRak { get; set; } = "";
+        public string NewItemUnit { get; set; } = "pcs";
         public DateTime? NewItemExpDate { get; set; }
         public string ImagePreview { get; set; } = "";
         public string UploadedImageBase64 { get; set; } = "";
         public bool IsRakAutoFilled { get; set; } = false;
         public ItemCategory NewItemCategory { get; set; } = ItemCategory.Light;
 
-        // --- DATA ---
         public List<InventoryItemDto> Items { get; private set; } = new();
-
-        public bool IsFormValid => !string.IsNullOrWhiteSpace(NewItemName) && NewItemQty > 0 && !string.IsNullOrWhiteSpace(NewItemRak);
+        public bool IsFormValid => !string.IsNullOrWhiteSpace(NewItemName) && NewItemQty > 0;
 
         public IEnumerable<InventoryItemDto> FilteredItems
         {
@@ -56,63 +60,102 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
             }
         }
 
-        public async Task<IEnumerable<string>> SearchExistingItems(string value)
-        {
-            await Task.Delay(50);
-
-            if (string.IsNullOrWhiteSpace(value))
-                return Items.Select(x => x.Nama).Distinct().OrderBy(x => x);
-
-            var valueLower = value.ToLower();
-            return Items
-                .Where(x => x.Nama.ToLower().Contains(valueLower))
-                .Select(x => x.Nama)
-                .Distinct()
-                .OrderBy(x => x)
-                .ToList();
-        }
-
-        // --- LOGIC METHODS ---
-
         public async Task LoadDataAsync()
         {
-            await Task.Delay(100);
-
-            // [UPDATE] Tambahkan data dummy Category
-            Items = new List<InventoryItemDto>
+            try
             {
-                new InventoryItemDto
+                IsLoading = true;
+                NotifyStateChanged();
+
+                var client = _httpClientFactory.CreateClient(ApiClientName);
+                client.Timeout = TimeSpan.FromSeconds(30);
+
+                var response = await client.GetAsync("api/v1/items?PageNumber=1&PageSize=100");
+
+                if (!response.IsSuccessStatusCode)
                 {
-                    Nama = "Helm Safety Red",
-                    NoRak = "A-01",
-                    Stok = 25,
-                    ItemCategory = ItemCategory.Light, // [BARU]
-                    ImageUrl = "https://images.unsplash.com/photo-1590650153855-d9e808231d41?q=80&w=400",
-                    ExpDate = DateTime.Now.AddDays(15)
-                },
-                new InventoryItemDto
-                {
-                    Nama = "Genset Portable 5000W",
-                    NoRak = "Z-99",
-                    Stok = 2,
-                    ItemCategory = ItemCategory.Heavy, // [BARU]
-                    ImageUrl = "https://images.unsplash.com/photo-1581094288338-2314dddb79a7?q=80&w=400",
-                    ExpDate = null
-                },
-                new InventoryItemDto
-                {
-                    Nama = "Rompi Proyek",
-                    NoRak = "B-12",
-                    Stok = 50,
-                    ItemCategory = ItemCategory.Medium, // [BARU]
-                    ImageUrl = "https://images.unsplash.com/photo-1581094288338-2314dddb79a7?q=80&w=400",
-                    ExpDate = DateTime.Now.AddYears(1)
+                    _snackbar.Add($"Gagal memuat data. Status: {response.StatusCode}", Severity.Error);
+                    return;
                 }
-            };
-            NotifyStateChanged();
+
+                var jsonString = await response.Content.ReadAsStringAsync();
+
+                // 1. OPSI PENTING UNTUK MENCEGAH STACK OVERFLOW KARENA CIRCULAR REFERENCE
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = null,
+                    NumberHandling = JsonNumberHandling.AllowReadingFromString,
+                    ReferenceHandler = ReferenceHandler.Preserve // ATAU IgnoreCycles. Preserve lebih aman jika backend pakai Newtonsoft default.
+                };
+
+                // Coba gunakan IgnoreCycles dulu karena System.Text.Json defaultnya strict
+                var optionsIgnoreCycles = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = null,
+                    ReferenceHandler = ReferenceHandler.IgnoreCycles
+                };
+
+                PaginatedListResponse<ItemApiDto>? result = null;
+
+                try
+                {
+                    // Coba deserialize dengan IgnoreCycles
+                    result = JsonSerializer.Deserialize<PaginatedListResponse<ItemApiDto>>(jsonString, optionsIgnoreCycles);
+                }
+                catch (JsonException)
+                {
+                    // Jika gagal, coba fallback ke List array langsung (siapa tahu struktur beda)
+                    try
+                    {
+                        var listResult = JsonSerializer.Deserialize<List<ItemApiDto>>(jsonString, optionsIgnoreCycles);
+                        if (listResult != null)
+                        {
+                            // Gunakan konstruktor karena PaginatedListResponse mungkin immutable
+                            result = new PaginatedListResponse<ItemApiDto>
+                            {
+                                Items = listResult,
+                                TotalCount = listResult.Count
+                            };
+                        }
+                    }
+                    catch (Exception exInner)
+                    {
+                        Console.WriteLine($"Gagal parsing JSON (Fallback): {exInner.Message}");
+                        // Jangan throw, biarkan list kosong agar app tidak crash
+                    }
+                }
+
+                if (result?.Items != null)
+                {
+                    Items = result.Items.Select(x => new InventoryItemDto
+                    {
+                        Id = x.Id,
+                        Nama = x.Name ?? "Tanpa Nama",
+                        Stok = x.TotalStock,
+                        ItemCategory = x.Category,
+                        ImageUrl = !string.IsNullOrEmpty(x.ImageUrl) ? x.ImageUrl : "https://via.placeholder.com/400?text=No+Image",
+                        ExpDate = x.ExpiryDate,
+                        NoRak = !string.IsNullOrEmpty(x.Description) ? x.Description : "N/A",
+                        Satuan = x.Unit ?? "pcs"
+                    }).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Tangkap SEMUA exception agar Blazor sirkuit tidak putus
+                Console.WriteLine($"FATAL ERROR LoadData: {ex}");
+                _snackbar.Add($"Error sistem: {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                IsLoading = false;
+                NotifyStateChanged();
+            }
         }
 
-        public void HandleSubmit()
+        public async Task HandleSubmit()
         {
             if (!IsFormValid)
             {
@@ -120,117 +163,174 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
                 return;
             }
 
-            var existing = Items.FirstOrDefault(x => x.Nama.Equals(NewItemName, StringComparison.OrdinalIgnoreCase));
-            if (existing != null)
+            try
             {
-                existing.Stok += NewItemQty;
-                existing.ItemCategory = NewItemCategory;
-                _snackbar.Add("Stok bertambah!", Severity.Success);
-            }
-            else
-            {
-                Items.Add(new InventoryItemDto
-                {
-                    Nama = NewItemName,
-                    Stok = NewItemQty,
-                    NoRak = NewItemRak,
-                    ExpDate = NewItemExpDate,
-                    ImageUrl = ImagePreview,
-                    ItemCategory = NewItemCategory
-                });
-                _snackbar.Add("Barang baru!", Severity.Success);
-            }
+                IsLoading = true;
+                NotifyStateChanged();
 
-            IsAddDialogOpen = false;
-            ResetForm();
-            NotifyStateChanged(); // <--- Update UI
+                var client = _httpClientFactory.CreateClient(ApiClientName);
+
+                if (UploadedImageBytes != null && UploadedImageBytes.Length > 0)
+                {
+                    // Upload multipart: form fields + image file
+                    using var content = new MultipartFormDataContent();
+
+                    // Add JSON fields as string content (or add a JSON part depending on backend)
+                    content.Add(new StringContent(NewItemName ?? ""), "Name");
+                    content.Add(new StringContent(NewItemQty.ToString()), "TotalStock");
+                    content.Add(new StringContent(NewItemQty.ToString()), "AvailableStock");
+                    content.Add(new StringContent(NewItemUnit ?? "pcs"), "Unit");
+                    content.Add(new StringContent(((int)NewItemCategory).ToString()), "Category");
+                    if (NewItemExpDate.HasValue)
+                        content.Add(new StringContent(NewItemExpDate.Value.ToString("o")), "ExpiryDate");
+                    content.Add(new StringContent(NewItemRak ?? ""), "Description");
+
+                    var streamContent = new ByteArrayContent(UploadedImageBytes);
+                    streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+                    // "ImageFile" should match the IFormFile parameter name expected by the API
+                    content.Add(streamContent, "ImageFile", "upload.jpg");
+
+                    HttpResponseMessage response;
+                    if (EditingItemId.HasValue)
+                    {
+                        response = await client.PutAsync($"api/v1/items/{EditingItemId.Value}/multipart", content);
+                    }
+                    else
+                    {
+                        response = await client.PostAsync("api/v1/items/multipart", content);
+                    }
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        _snackbar.Add(EditingItemId.HasValue ? "Barang diperbarui!" : "Barang baru disimpan!", Severity.Success);
+                        IsAddDialogOpen = false;
+                        ResetForm();
+                        await LoadDataAsync();
+                    }
+                    else
+                    {
+                        var errorBody = await response.Content.ReadAsStringAsync();
+                        _snackbar.Add($"Gagal menyimpan: {response.StatusCode}", Severity.Error);
+                        Console.WriteLine($"Multipart save failed: {response.StatusCode} - {errorBody}");
+                    }
+                }
+                else
+                {
+                    // No image bytes -> fallback to your previous JSON-based POST (ImageUrl can be empty)
+                    var payload = new CreateItemRequest
+                    {
+                        Name = NewItemName,
+                        TotalStock = NewItemQty,
+                        AvailableStock = NewItemQty,
+                        Category = NewItemCategory,
+                        ImageUrl = ImagePreview,
+                        ExpiryDate = NewItemExpDate,
+                        Description = NewItemRak,
+                        Unit = NewItemUnit,
+                        RackId = null
+                    };
+
+                    HttpResponseMessage response;
+                    if (EditingItemId.HasValue)
+                    {
+                        var updatePayload = new UpdateItemRequest
+                        {
+                            Id = EditingItemId.Value,
+                            Name = payload.Name,
+                            TotalStock = payload.TotalStock,
+                            AvailableStock = payload.AvailableStock,
+                            Category = payload.Category,
+                            ImageUrl = payload.ImageUrl,
+                            ExpiryDate = payload.ExpiryDate,
+                            Description = payload.Description,
+                            Unit = payload.Unit,
+                            RackId = payload.RackId
+                        };
+                        response = await client.PutAsJsonAsync($"api/v1/items/{EditingItemId.Value}", updatePayload);
+                    }
+                    else
+                    {
+                        response = await client.PostAsJsonAsync("api/v1/items", payload);
+                    }
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        _snackbar.Add(EditingItemId.HasValue ? "Barang diperbarui!" : "Barang baru disimpan!", Severity.Success);
+                        IsAddDialogOpen = false;
+                        ResetForm();
+                        await LoadDataAsync();
+                    }
+                    else
+                    {
+                        var errorMsg = await response.Content.ReadAsStringAsync();
+                        _snackbar.Add($"Gagal menyimpan: {response.StatusCode}", Severity.Error);
+                        Console.WriteLine($"JSON save failed: {response.StatusCode} - {errorMsg}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unhandled error in HandleSubmit: {ex}");
+                _snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                IsLoading = false;
+                NotifyStateChanged();
+            }
+        }
+
+        public async Task<IEnumerable<string>> SearchExistingItems(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return Items.Select(x => x.Nama).Distinct().OrderBy(x => x);
+
+            await Task.Delay(50);
+            var valueLower = value.ToLower();
+            return Items
+                .Where(x => x.Nama.ToLower().Contains(valueLower))
+                .Select(x => x.Nama)
+                .Distinct()
+                .OrderBy(x => x);
         }
 
         public void OnItemNameChanged(string value)
         {
             NewItemName = value;
-
-            var existingItem = Items.FirstOrDefault(x =>
-                x.Nama.Equals(value, StringComparison.OrdinalIgnoreCase));
+            var existingItem = Items.FirstOrDefault(x => x.Nama.Equals(value, StringComparison.OrdinalIgnoreCase));
 
             if (existingItem != null)
             {
-                // Auto-fill nomor rak dari data existing
                 NewItemRak = existingItem.NoRak;
                 IsRakAutoFilled = true;
                 NewItemCategory = existingItem.ItemCategory;
-
-                // Auto-fill image preview jika ada
-                if (!string.IsNullOrEmpty(existingItem.ImageUrl))
-                {
-                    ImagePreview = existingItem.ImageUrl;
-                }
+                if (!string.IsNullOrEmpty(existingItem.ImageUrl)) ImagePreview = existingItem.ImageUrl;
             }
             else
             {
-                // Barang baru - reset rak & enable input
-                NewItemRak = "";
-                IsRakAutoFilled = false;
-                NewItemCategory = ItemCategory.Light;
+                if (!IsRakAutoFilled) { /* Do nothing */ }
             }
-
             NotifyStateChanged();
         }
-        public async Task TriggerFileInput()
-        {
-            await _jsRuntime.InvokeVoidAsync("eval", "document.getElementById('fileInput').click()");
-        }
 
-        // Handle file upload
-        public async Task HandleFileSelected(InputFileChangeEventArgs e)
-        {
-            var file = e.File;
-
-            if (file != null)
-            {
-                // Validasi ukuran file (max 5MB)
-                if (file.Size > 5 * 1024 * 1024)
-                {
-                    _snackbar.Add("Ukuran file maksimal 5MB", Severity.Warning);
-                    return;
-                }
-
-                // Validasi tipe file
-                if (!file.ContentType.StartsWith("image/"))
-                {
-                    _snackbar.Add("File harus berupa gambar (JPG, PNG)", Severity.Warning);
-                    return;
-                }
-
-                try
-                {
-                    // Convert to base64 for preview
-                    var buffer = new byte[file.Size];
-                    await file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024).ReadAsync(buffer);
-                    UploadedImageBase64 = Convert.ToBase64String(buffer);
-                    ImagePreview = $"data:{file.ContentType};base64,{UploadedImageBase64}";
-
-                    NotifyStateChanged();
-                    _snackbar.Add("Gambar berhasil diunggah", Severity.Success);
-                }
-                catch (Exception ex)
-                {
-                    _snackbar.Add($"Error upload gambar: {ex.Message}", Severity.Error);
-                }
-            }
-        }
-
-        // Clear uploaded image
-        public void ClearImage()
-        {
-            ImagePreview = "";
-            UploadedImageBase64 = "";
-            NotifyStateChanged();
-        }
-        
         public void OpenAddDialog()
         {
             ResetForm();
+            IsAddDialogOpen = true;
+            NotifyStateChanged();
+        }
+
+        public void OpenEditDialog(InventoryItemDto item)
+        {
+            EditingItemId = item.Id;
+            NewItemName = item.Nama;
+            NewItemQty = item.Stok;
+            NewItemRak = item.NoRak;
+            NewItemExpDate = item.ExpDate;
+            NewItemCategory = item.ItemCategory;
+            ImagePreview = item.ImageUrl;
+            NewItemUnit = item.Satuan;
+
             IsAddDialogOpen = true;
             NotifyStateChanged();
         }
@@ -241,19 +341,141 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
             NotifyStateChanged();
         }
 
-        // Helper private untuk memicu update UI
+        public async Task TriggerFileInput()
+        {
+            // Use a named JS function rather than eval to avoid crashes/JS errors
+            await _jsRuntime.InvokeVoidAsync("triggerFileInput");
+        }
+
+        // Replace the existing HandleFileSelected method with this safer, more-logged implementation.
+        public byte[]? UploadedImageBytes { get; private set; } = null;
+        public async Task HandleFileSelected(InputFileChangeEventArgs e)
+        {
+            var file = e.File;
+            Console.WriteLine($"HandleFileSelected invoked. file={(file != null ? $"{file.Name}, size={file.Size}" : "null")}");
+            if (file == null) return;
+
+            if (!file.ContentType.StartsWith("image/"))
+            {
+                _snackbar.Add("File harus berupa gambar", Severity.Warning);
+                Console.WriteLine("Rejected: not image");
+                return;
+            }
+
+            try
+            {
+                const long maxPreviewBytes = 200 * 1024;   // 200 KB preview
+                const long maxReadBytes = 2 * 1024 * 1024; // 2 MB read limit
+
+                Console.WriteLine($"File.Size={file.Size}, maxReadBytes={maxReadBytes}");
+                if (file.Size > maxReadBytes)
+                {
+                    _snackbar.Add("File terlalu besar (>2MB). Gunakan file lebih kecil.", Severity.Warning);
+                    Console.WriteLine($"Rejected file {file.Name} size={file.Size} bytes > {maxReadBytes}");
+                    UploadedImageBytes = null;
+                    ImagePreview = "";
+                    NotifyStateChanged();
+                    return;
+                }
+
+                IBrowserFile toRead = file;
+                try
+                {
+                    Console.WriteLine("Attempting RequestImageFileAsync (resize)...");
+                    toRead = await file.RequestImageFileAsync(file.ContentType, 800, 800);
+                    Console.WriteLine("RequestImageFileAsync succeeded");
+                }
+                catch (Exception exResize)
+                {
+                    Console.WriteLine($"RequestImageFileAsync failed: {exResize.Message}. Falling back to original file stream.");
+                    toRead = file;
+                }
+
+                using var stream = toRead.OpenReadStream(maxAllowedSize: maxReadBytes);
+                using var ms = new MemoryStream();
+                Console.WriteLine("Copying stream...");
+                await stream.CopyToAsync(ms);
+                var bytes = ms.ToArray();
+                Console.WriteLine($"Copied {bytes.Length} bytes from stream.");
+
+                UploadedImageBytes = bytes;
+
+                if (bytes.Length <= maxPreviewBytes)
+                {
+                    var base64 = Convert.ToBase64String(bytes);
+                    ImagePreview = $"data:{file.ContentType};base64,{base64}";
+                    Console.WriteLine("Preview set (base64)");
+                }
+                else
+                {
+                    ImagePreview = "";
+                    _snackbar.Add("Preview disabled for large images. Gambar akan diupload saat menyimpan.", Severity.Info);
+                    Console.WriteLine("Preview disabled due to size");
+                }
+
+                NotifyStateChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in HandleFileSelected (catch): {ex}");
+                _snackbar.Add("Gagal memproses gambar", Severity.Error);
+            }
+        }
+
+
+        public void ClearImage()
+        {
+            ImagePreview = "";
+            UploadedImageBase64 = "";
+            NotifyStateChanged();
+        }
+
         private void NotifyStateChanged() => OnStateChange?.Invoke();
 
         private void ResetForm()
         {
+            EditingItemId = null;
             NewItemName = "";
             NewItemQty = 1;
             NewItemRak = "";
+            NewItemUnit = "pcs";
             NewItemExpDate = null;
             ImagePreview = "";
             UploadedImageBase64 = "";
             IsRakAutoFilled = false;
             NewItemCategory = ItemCategory.Light;
+        }
+
+        private class ItemApiDto
+        {
+            public Guid Id { get; set; }
+            public string? Name { get; set; }
+            public string? Description { get; set; }
+            public int TotalStock { get; set; }
+            public int AvailableStock { get; set; }
+            public string? Unit { get; set; }
+            public ItemCategory Category { get; set; }
+            public string? ImageUrl { get; set; }
+            public DateTime? ExpiryDate { get; set; }
+            public Guid? RackId { get; set; }
+        }
+
+        private class CreateItemRequest
+        {
+            public string? Name { get; set; }
+            public int TotalStock { get; set; }
+            public int AvailableStock { get; set; }
+            public string? Unit { get; set; } = "pcs";
+            public ItemCategory Category { get; set; }
+            public string? ImageUrl { get; set; }
+            public DateTime? ExpiryDate { get; set; }
+            public string? Description { get; set; }
+            public Guid? RackId { get; set; }
+        }
+
+        private class UpdateItemRequest : CreateItemRequest
+        {
+            public Guid Id { get; set; }
         }
     }
 }

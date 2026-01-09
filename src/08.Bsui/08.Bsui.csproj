@@ -16,9 +16,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Libraries\**" />
+    <Compile Remove="NewFolder\**" />
     <Content Remove="Libraries\**" />
+    <Content Remove="NewFolder\**" />
     <EmbeddedResource Remove="Libraries\**" />
+    <EmbeddedResource Remove="NewFolder\**" />
     <None Remove="Libraries\**" />
+    <None Remove="NewFolder\**" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Blazored.FluentValidation" Version="2.2.0" />
@@ -52,7 +56,6 @@
     <Folder Include="Common\Constants\" />
     <Folder Include="Common\Extensions\" />
     <Folder Include="Features\" />
-    <Folder Include="NewFolder\NewFolder\" />
     <Folder Include="Services\" />
     <Folder Include="wwwroot\ApexCharts\" />
     <Folder Include="wwwroot\DataTables\" />

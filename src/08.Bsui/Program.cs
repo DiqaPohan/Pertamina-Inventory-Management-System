@@ -16,40 +16,95 @@ using Syncfusion.Licensing;
 Console.WriteLine($"Starting Pertamina Inventory...");
 
 var builder = WebApplication.CreateBuilder(args);
-//builder.Host.UseLoggingService();
-builder.Services.AddScoped<Pertamina.SolutionTemplate.Bsui.ViewModels.InventoryViewModel>();
 
+// Registrasi ViewModel
+builder.Services.AddScoped<InventoryViewModel>();
 builder.Services.AddScoped<DashboardViewModel>();
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor();
+builder.Services.AddServerSideBlazor()
+    .AddHubOptions(options =>
+    {
+        // Allow bigger SignalR payloads (adjust as needed). This must be >= the largest image stream you accept.
+        options.MaximumReceiveMessageSize = 10 * 1024 * 1024; // 10 MB
+    });
+
+builder.Services.Configure<Microsoft.AspNetCore.Components.Server.CircuitOptions>(options =>
+{
+    // Enable detailed errors while debugging to capture serialization/SignalR issues.
+    options.DetailedErrors = true;
+});
+
 builder.Services.AddMudServices();
 builder.Services.AddSyncfusionBlazor();
 
-//builder.Services.AddShared(builder.Configuration);
-//builder.Services.AddClient(builder.Configuration);
-//builder.Services.AddBsui(builder.Configuration);
+builder.Services.AddHttpClient("Pertamina.SolutionTemplate.WebApi", client =>
+{
+    var url = builder.Configuration["ApiBaseUrl"] ?? "https://localhost:59908";
+    client.BaseAddress = new Uri(url);
+});
 
-//SyncfusionLicenseProvider.RegisterLicense(builder.Configuration["Syncfusion:LicenseKey"]); HEHEHE
 StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);
 
 var app = builder.Build();
 
-var logger = app.Services.GetRequiredService<ILogger<Program>>();
-logger.LogInformation("Running {AssemblyName}", "Pertamina Inventory");
+// Ensure logger service available
+var logger = app.Services.GetService<ILogger<Program>>();
+
+AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) =>
+{
+    try
+    {
+        var ex = eventArgs.ExceptionObject as Exception;
+        if (ex != null)
+        {
+            logger?.LogCritical(ex, "Unhandled exception (AppDomain)");
+            Console.WriteLine($"Unhandled exception: {ex}");
+        }
+        else
+        {
+            logger?.LogCritical("Unhandled exception object (non-Exception) in AppDomain");
+        }
+    }
+    catch { /* avoid throwing from handler */ }
+};
+
+TaskScheduler.UnobservedTaskException += (sender, eventArgs) =>
+{
+    try
+    {
+        logger?.LogError(eventArgs.Exception, "UnobservedTaskException");
+        eventArgs.SetObserved();
+    }
+    catch { /* ignore */ }
+};
 
 if (!app.Environment.IsProduction())
 {
     app.UseDeveloperExceptionPage();
 }
 
-//app.UseBsui(app.Configuration);
-//app.UseSecurityService(app.Environment);
+// Configure middleware and routing BEFORE running the app
+// (order matters)
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 //app.UseAuthenticationService(app.Configuration);
 //app.UseAuthorizationService(app.Configuration);
+
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
-app.Run();
+
+// Single final Run wrapped with try/catch so startup failures are logged
+try
+{
+    logger?.LogInformation("Running {AssemblyName}", "Pertamina Inventory");
+    app.Run();
+}
+catch (Exception ex)
+{
+    logger?.LogCritical(ex, "Host terminated unexpectedly");
+    Console.WriteLine($"Host terminated unexpectedly: {ex}");
+    throw;
+}
