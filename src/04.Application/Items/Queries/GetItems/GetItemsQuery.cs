@@ -2,20 +2,20 @@
 using Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-//using Pertamina.SolutionTemplate.Application.Services.Persistence;
-using Pertamina.SolutionTemplate.Domain.Entities;
-using Pertamina.SolutionTemplate.Shared.Common.Requests;  // Penting
-using Pertamina.SolutionTemplate.Shared.Common.Responses; // Penting
+using Pertamina.SolutionTemplate.Shared.Common.Enums; // Pastikan namespace Enum ini benar
+using Pertamina.SolutionTemplate.Shared.Common.Requests;
+using Pertamina.SolutionTemplate.Shared.Common.Responses;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Pertamina.SolutionTemplate.Application.Items.Queries.GetItems
 {
-    // 1. Ubah warisan menjadi PaginatedListRequest agar bisa menangkap ?PageNumber=1&PageSize=100
-    // 2. Ubah Return type menjadi PaginatedListResponse<Item>
     public class GetItemsQuery : PaginatedListRequest, IRequest<PaginatedListResponse<Item>>
     {
+        // Parameter tambahan untuk filter pegawai (Scan QR) dan Dashboard Admin
+        public string? RackId { get; set; }
+        public ItemStatus? Status { get; set; }
     }
 
     public class GetItemsQueryHandler : IRequestHandler<GetItemsQuery, PaginatedListResponse<Item>>
@@ -29,25 +29,36 @@ namespace Pertamina.SolutionTemplate.Application.Items.Queries.GetItems
 
         public async Task<PaginatedListResponse<Item>> Handle(GetItemsQuery request, CancellationToken cancellationToken)
         {
-            // Query dasar
+            // 1. Query dasar
             var query = _context.Items.AsNoTracking();
 
-            // Hitung total data sebelum dipotong halaman
+            // 2. Filter berdasarkan RackId (Penting untuk scan QR Pegawai)
+            if (!string.IsNullOrEmpty(request.RackId))
+            {
+                query = query.Where(x => x.RackId == request.RackId);
+            }
+
+            // 3. Filter berdasarkan Status (Pending/Active)
+            if (request.Status.HasValue)
+            {
+                query = query.Where(x => x.Status == request.Status);
+            }
+
+            // 4. Hitung total data SETELAH filter, tapi SEBELUM paging
             var totalCount = await query.CountAsync(cancellationToken);
 
-            // Ambil data sesuai halaman (Skip & Take)
+            // 5. Ambil data dengan Paging
             var items = await query
-                .OrderBy(x => x.Id) // Wajib ada OrderBy saat paging
+                .OrderBy(x => x.Name) // Urutkan berdasarkan nama agar rapi di tabel
                 .Skip((request.Page - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .ToListAsync(cancellationToken);
 
-            // Kembalikan dalam format PaginatedListResponse yang diinginkan Frontend
+            // 6. Return response
             return new PaginatedListResponse<Item>
             {
                 Items = items,
                 TotalCount = totalCount
-                // If PaginatedListResponse has properties for Page and PageSize, set them here as well.
             };
         }
     }

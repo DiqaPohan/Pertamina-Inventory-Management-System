@@ -9,11 +9,12 @@ public class SqlServerDbContextFactory : IDesignTimeDbContextFactory<SqlServerSo
     {
         var optionsBuilder = new DbContextOptionsBuilder<SqlServerSolutionTemplateDbContext>();
 
-        // Lu tulis manual kenceng-kenceng di sini biar dia gak baca JSON yang error itu
-        var connectionString = "Server=localhost;Database=DB_Inventory_Project;Trusted_Connection=True;TrustServerCertificate=True;";
+        // Gunakan connection string kamu
+        var connectionString = "Server=(localdb)\\MSSQLLocalDB;Database=DB_Inventory_Project;Trusted_Connection=True;TrustServerCertificate=True;";
 
-        optionsBuilder.UseSqlServer(connectionString);
+        optionsBuilder.UseSqlServer(connectionString, x => x.MigrationsAssembly("Pertamina.SolutionTemplate.Infrastructure"));
 
+        // Tambahkan ini untuk mematikan internal caching EF yang sering bikin error assembly saat design-time
         return new SqlServerSolutionTemplateDbContext(optionsBuilder.Options);
     }
 }

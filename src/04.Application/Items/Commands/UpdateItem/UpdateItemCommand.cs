@@ -10,7 +10,8 @@ public class UpdateItemCommand : IRequest<bool>
 {
     public Guid Id { get; set; } // Wajib ada untuk identitas
     public string Name { get; set; } = string.Empty;
-    public string? Description { get; set; }
+    public string? RackId { get; set; }
+    public ItemStatus Status { get; set; }
     public ItemCategory Category { get; set; }
     public int TotalStock { get; set; }
     public int AvailableStock { get; set; }
@@ -31,8 +32,8 @@ public class UpdateItemCommandHandler : IRequestHandler<UpdateItemCommand, bool>
         if (entity == null) return false;
 
         entity.Name = request.Name;
-        entity.Description = request.Description;
         entity.Category = request.Category;
+        entity.RackId = request.RackId;
         entity.TotalStock = request.TotalStock;
         entity.AvailableStock = request.AvailableStock;
         entity.Unit = request.Unit;
