@@ -173,7 +173,7 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
                         ItemCategory = x.Category,
                         ImageUrl = !string.IsNullOrEmpty(x.ImageUrl) ? x.ImageUrl : "https://via.placeholder.com/400?text=No+Image",
                         ExpDate = x.ExpiryDate,
-                        NoRak = !string.IsNullOrEmpty(x.Description) ? x.Description : "N/A",
+                        NoRak = !string.IsNullOrEmpty(x.RackId) ? x.RackId : "N/A",
                         Satuan = x.Unit ?? "pcs"
                     }).ToList();
                 }
@@ -496,7 +496,7 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
             public ItemCategory Category { get; set; }
             public string? ImageUrl { get; set; }
             public DateTime? ExpiryDate { get; set; }
-            public Guid? RackId { get; set; }
+            public String? RackId { get; set; }
         }
 
         private class CreateItemRequest
@@ -509,7 +509,7 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
             public string? ImageUrl { get; set; }
             public DateTime? ExpiryDate { get; set; }
             public string? Description { get; set; }
-            public Guid? RackId { get; set; }
+            public String? RackId { get; set; }
         }
 
         private class UpdateItemRequest : CreateItemRequest
