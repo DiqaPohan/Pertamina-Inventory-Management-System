@@ -8,7 +8,7 @@ namespace Application.Services.Persistence;
 public interface ISolutionTemplateDbContext
 {
     DbSet<Item> Items { get; }
-    DbSet<RackSlot> RackSlots { get; }
+    DbSet<Rack> Racks { get; }
     DbSet<LoanTransaction> LoanTransactions { get; }
 
     // Properti audit bawaan biarkan tetap ada

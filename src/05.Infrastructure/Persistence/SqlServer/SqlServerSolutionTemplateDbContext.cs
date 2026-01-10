@@ -19,6 +19,6 @@ public class SqlServerSolutionTemplateDbContext : SolutionTemplateDbContext
         base.OnModelCreating(modelBuilder);
 
         // PAKSA PAKAI SKEMA SolutionTemplate AGAR TIDAK JADI dbo
-        modelBuilder.HasDefaultSchema("SolutionTemplate");
+        //modelBuilder.HasDefaultSchema("SolutionTemplate");
     }
 }

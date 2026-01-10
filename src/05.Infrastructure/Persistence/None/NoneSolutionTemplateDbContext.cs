@@ -1,5 +1,5 @@
 ﻿using Application.Services.Persistence;
-using Domain.Entities; // Pake namespace Entities lu yang baru
+using Domain.Entities; // Namespace untuk Entity Rack dan Item lu
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pertamina.SolutionTemplate.Domain.Entities;
@@ -22,7 +22,10 @@ public class NoneSolutionTemplateDbContext : DbContext, ISolutionTemplateDbConte
 
     #region Business Entities - SINKRON DENGAN INVENTORY
     public DbSet<Item> Items => Set<Item>();
-    public DbSet<RackSlot> RackSlots => Set<RackSlot>();
+    
+    // RACKSLOT DIHAPUS, DIGANTI JADI RACK
+    public DbSet<Rack> Racks => Set<Rack>(); 
+    
     public DbSet<LoanTransaction> LoanTransactions => Set<LoanTransaction>();
     #endregion Business Entities
 

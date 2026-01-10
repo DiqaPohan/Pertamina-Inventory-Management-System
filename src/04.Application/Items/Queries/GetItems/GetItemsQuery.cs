@@ -2,64 +2,72 @@
 using Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Pertamina.SolutionTemplate.Shared.Common.Enums; // Pastikan namespace Enum ini benar
+using Pertamina.SolutionTemplate.Shared.Common.Enums;
 using Pertamina.SolutionTemplate.Shared.Common.Requests;
 using Pertamina.SolutionTemplate.Shared.Common.Responses;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Pertamina.SolutionTemplate.Application.Items.Queries.GetItems
+namespace Pertamina.SolutionTemplate.Application.Items.Queries.GetItems;
+
+public class GetItemsQuery : PaginatedListRequest, IRequest<PaginatedListResponse<Item>>
 {
-    public class GetItemsQuery : PaginatedListRequest, IRequest<PaginatedListResponse<Item>>
+    public string? RackId { get; set; }
+    public ItemStatus? Status { get; set; }
+}
+
+public class GetItemsQueryHandler : IRequestHandler<GetItemsQuery, PaginatedListResponse<Item>>
+{
+    private readonly ISolutionTemplateDbContext _context;
+
+    public GetItemsQueryHandler(ISolutionTemplateDbContext context)
     {
-        // Parameter tambahan untuk filter pegawai (Scan QR) dan Dashboard Admin
-        public string? RackId { get; set; }
-        public ItemStatus? Status { get; set; }
+        _context = context;
     }
 
-    public class GetItemsQueryHandler : IRequestHandler<GetItemsQuery, PaginatedListResponse<Item>>
+    public async Task<PaginatedListResponse<Item>> Handle(GetItemsQuery request, CancellationToken cancellationToken)
     {
-        private readonly ISolutionTemplateDbContext _context;
+        // 1. Query dasar dengan Include Rack (Eager Loading)
+        // Kita tarik data Rack-nya sekalian biar relasi FK-nya kepake
+        var query = _context.Items
+            .Include(x => x.Rack)
+            .AsNoTracking();
 
-        public GetItemsQueryHandler(ISolutionTemplateDbContext context)
+        // 2. Filter IsDeleted (Standard Practice)
+        query = query.Where(x => !x.IsDeleted);
+
+        // 3. LOGIC FILTER STATUS
+        // Jika request status tidak diisi, secara default kita CUMA nampilin yang Active
+        if (request.Status.HasValue)
         {
-            _context = context;
+            query = query.Where(x => x.Status == request.Status.Value);
+        }
+        else
+        {
+            query = query.Where(x => x.Status == ItemStatus.Active);
         }
 
-        public async Task<PaginatedListResponse<Item>> Handle(GetItemsQuery request, CancellationToken cancellationToken)
+        // 4. Filter berdasarkan RackId
+        if (!string.IsNullOrEmpty(request.RackId))
         {
-            // 1. Query dasar
-            var query = _context.Items.AsNoTracking();
-
-            // 2. Filter berdasarkan RackId (Penting untuk scan QR Pegawai)
-            if (!string.IsNullOrEmpty(request.RackId))
-            {
-                query = query.Where(x => x.RackId == request.RackId);
-            }
-
-            // 3. Filter berdasarkan Status (Pending/Active)
-            if (request.Status.HasValue)
-            {
-                query = query.Where(x => x.Status == request.Status);
-            }
-
-            // 4. Hitung total data SETELAH filter, tapi SEBELUM paging
-            var totalCount = await query.CountAsync(cancellationToken);
-
-            // 5. Ambil data dengan Paging
-            var items = await query
-                .OrderBy(x => x.Name) // Urutkan berdasarkan nama agar rapi di tabel
-                .Skip((request.Page - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .ToListAsync(cancellationToken);
-
-            // 6. Return response
-            return new PaginatedListResponse<Item>
-            {
-                Items = items,
-                TotalCount = totalCount
-            };
+            query = query.Where(x => x.RackId == request.RackId);
         }
+
+        // 5. Hitung total data sebelum paging
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        // 6. Ambil data dengan Paging & Sorting
+        var items = await query
+            .OrderBy(x => x.Name)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PaginatedListResponse<Item>
+        {
+            Items = items,
+            TotalCount = totalCount
+        };
     }
 }

@@ -1,24 +1,21 @@
-﻿using MediatR;
+﻿using Application.Services.Persistence;
 using Domain.Entities;
-using Application.Services.Persistence;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Pertamina.SolutionTemplate.Shared.Common.Enums;
+using Shared.Common.Enums;
 
 namespace Pertamina.SolutionTemplate.Application.Items.Commands.CreateItem;
 
-// 1. Ganti return type IRequest dari int ke Guid
-public class CreateItemCommand : IRequest<Guid>
+public record CreateItemCommand : IRequest<Guid>
 {
-    public string Name { get; set; } = string.Empty;
-    public ItemCategory Category { get; set; }
-    public string? RackId { get; set; }
-    public int TotalStock { get; set; }
-    public int AvailableStock { get; set; }
-    public string Unit { get; set; } = "pcs";
-    public string? ImageUrl { get; set; }
-    public DateTime? ExpiryDate { get; set; }
+    public string Name { get; init; } = default!;
+    public string RackId { get; init; } = default!; // FK ke tabel Racks
+    public int Category { get; init; }
+    public int TotalStock { get; init; }
+    public string Unit { get; init; } = default!;
 }
 
-// 2. Ganti IRequestHandler dari int ke Guid
 public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, Guid>
 {
     private readonly ISolutionTemplateDbContext _context;
@@ -30,25 +27,38 @@ public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, Guid>
 
     public async Task<Guid> Handle(CreateItemCommand request, CancellationToken cancellationToken)
     {
+        // 1. VALIDASI: Cek apakah RackId yang diinput Admin ada di tabel Racks
+        var rack = await _context.Racks
+            .FirstOrDefaultAsync(r => r.RackId == request.RackId, cancellationToken);
+
+        if (rack == null)
+        {
+            throw new Exception($"Gagal: Rak dengan ID '{request.RackId}' tidak ditemukan di sistem!");
+        }
+
+        // 2. OPSIONAL: Cek kalau Rak statusnya Full, kasih peringatan (tergantung kebijakan lu)
+        if (rack.Status == RackStatus.Full)
+        {
+            // Bisa throw error atau sekedar log, tapi mending throw biar Admin sadar
+            throw new Exception($"Gagal: Rak '{request.RackId}' saat ini berstatus FULL!");
+        }
+
         var entity = new Item
         {
-            // ID tidak perlu diisi manual, biasanya auto-generate Guid.NewGuid() di constructor Entity
+            Id = Guid.NewGuid(),
             Name = request.Name,
-            Category = request.Category,
             RackId = request.RackId,
-            Status = ItemStatus.Pending,
+            Category = (ItemCategory)request.Category,
             TotalStock = request.TotalStock,
-            AvailableStock = request.AvailableStock,
+            AvailableStock = request.TotalStock, // Awalnya stok tersedia sama dengan total
             Unit = request.Unit,
-            ImageUrl = request.ImageUrl,
-            ExpiryDate = request.ExpiryDate
+            Status = 0, // 0: Pending/Created
+            IsDeleted = false
         };
 
         _context.Items.Add(entity);
-
         await _context.SaveChangesAsync(cancellationToken);
 
-        // Sekarang return entity.Id yang bertipe Guid
         return entity.Id;
     }
-}   
+}

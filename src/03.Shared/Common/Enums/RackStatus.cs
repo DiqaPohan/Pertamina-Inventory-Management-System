@@ -2,7 +2,6 @@
 
 public enum RackStatus
 {
-    Empty = 1,      // Kosong
-    Used = 2,       // Terisi sebagian
-    Full = 3        // Penuh
+    Available = 0, // Ini gabungan Empty & Used
+    Full = 1       // Penuh
 }

@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Pertamina.SolutionTemplate.Application.Items.Commands.CreateItem;
 using Pertamina.SolutionTemplate.Application.Items.Commands.DeleteItem;
 using Pertamina.SolutionTemplate.Application.Items.Commands.UpdateItem;
-using Pertamina.SolutionTemplate.Application.Items.Commands.ConfirmPlacement; // Tambahin ini
+using Pertamina.SolutionTemplate.Application.Items.Commands.ConfirmPlacement;
 using Pertamina.SolutionTemplate.Application.Items.Queries.GetItemById;
 using Pertamina.SolutionTemplate.Application.Items.Queries.GetItems;
-using Pertamina.SolutionTemplate.Application.Items.Queries.GetPendingItems; // Tambahin ini
+using Pertamina.SolutionTemplate.Application.Items.Queries.GetPendingItems;
 using Pertamina.SolutionTemplate.Shared.Common.Responses;
 
 namespace Pertamina.SolutionTemplate.WebApi.Areas.V1.Controllers;
@@ -18,7 +18,6 @@ namespace Pertamina.SolutionTemplate.WebApi.Areas.V1.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class ItemsController : ApiControllerBase
 {
-    // READ ALL (Biasa dipake Admin)
     [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<PaginatedListResponse<Item>>> GetItems([FromQuery] GetItemsQuery query)
@@ -26,7 +25,6 @@ public class ItemsController : ApiControllerBase
         return await Mediator.Send(query);
     }
 
-    // READ PENDING (Buat rekomendasi di Form Pegawai)
     [AllowAnonymous]
     [HttpGet("pending")]
     public async Task<ActionResult<List<PendingItemDto>>> GetPendingItems()
@@ -34,15 +32,17 @@ public class ItemsController : ApiControllerBase
         return await Mediator.Send(new GetPendingItemsQuery());
     }
 
-    // READ BY ID
     [HttpGet("{id}")]
     public async Task<ActionResult<Item>> GetItem(Guid id)
     {
         var result = await Mediator.Send(new GetItemByIdQuery(id));
-        return result != null ? Ok(result) : NotFound();
+
+        // Ini sudah bagus, tapi pastikan "result" isinya Item yang sudah include Rack
+        if (result == null) return NotFound($"Barang dengan ID {id} tidak ditemukan.");
+
+        return Ok(result);
     }
 
-    // CREATE (Oleh Admin, default status bakal Pending)
     [AllowAnonymous]
     [HttpPost]
     public async Task<ActionResult<Guid>> Create([FromBody] CreateItemCommand command)
@@ -61,17 +61,16 @@ public class ItemsController : ApiControllerBase
         }
     }
 
-    // CONFIRM PLACEMENT (Fitur utama Pegawai setelah Scan QR)
+    // UPDATE DI SINI: Sekarang butuh rackId dari body/query
     [AllowAnonymous]
     [HttpPut("{id}/confirm-placement")]
-    public async Task<ActionResult<bool>> ConfirmPlacement(Guid id)
+    public async Task<ActionResult<bool>> ConfirmPlacement(Guid id, [FromQuery] string rackId)
     {
-        // Logic: Ngubah status Pending -> Active berdasarkan ID yang dipilih
-        var result = await Mediator.Send(new ConfirmPlacementCommand(id));
+        // SEKARANG KIRIM DUA ARGUMEN: id barang dan rackId hasil scan
+        var result = await Mediator.Send(new ConfirmPlacementCommand(id, rackId));
         return result ? Ok(result) : NotFound("Barang gagal diaktifkan.");
     }
 
-    // UPDATE
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(Guid id, UpdateItemCommand command)
     {
@@ -81,7 +80,6 @@ public class ItemsController : ApiControllerBase
         return result ? NoContent() : NotFound();
     }
 
-    // DELETE
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(Guid id)
     {
