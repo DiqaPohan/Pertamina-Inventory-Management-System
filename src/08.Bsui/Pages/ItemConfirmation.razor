@@ -1,0 +1,109 @@
+﻿@page "/item-confirmation"
+@using Pertamina.SolutionTemplate.Bsui.ViewModels
+@using MudBlazor
+
+<PageTitle>Konfirmasi Penempatan Barang</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6 mb-6">
+    <MudCard Elevation="4">
+        <MudCardHeader Class="bg-primary pt-4 pb-4">
+            <CardHeaderContent>
+                <MudText Typo="Typo.h5" Class="text-white" Style="font-weight:bold;">Konfirmasi Penempatan Barang</MudText>
+                <MudText Typo="Typo.subtitle2" Class="text-white">Scan QR / Konfirmasi barang oleh pekerja gudang</MudText>
+            </CardHeaderContent>
+            <CardHeaderActions>
+                <MudIcon Icon="@Icons.Material.Filled.QrCodeScanner" Color="Color.Surface" Size="Size.Large" />
+            </CardHeaderActions>
+        </MudCardHeader>
+
+        <MudCardContent Class="pa-6">
+            @* Area Notifikasi Error/Success *@
+            @if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-4" ShowCloseIcon="true" CloseIconClicked="(() => ViewModel.ErrorMessage = null)">
+                    @ViewModel.ErrorMessage
+                </MudAlert>
+            }
+            @if (!string.IsNullOrEmpty(ViewModel.SuccessMessage))
+            {
+                <MudAlert Severity="Severity.Success" Variant="Variant.Filled" Class="mb-4" ShowCloseIcon="true" CloseIconClicked="(() => ViewModel.SuccessMessage = null)">
+                    @ViewModel.SuccessMessage
+                </MudAlert>
+            }
+
+            @* Tampilan Loading *@
+            @if (ViewModel.IsLoading)
+            {
+                <div class="d-flex flex-column align-center py-8">
+                    <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" Class="mb-3" />
+                    <MudText Typo="Typo.body1" Color="Color.Secondary">Memproses data...</MudText>
+                </div>
+            }
+            else
+            {
+                <EditForm Model="@ViewModel" OnValidSubmit="HandleSubmit">
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudSelect T="Guid" Label="Pilih Barang (Pending)"
+                                       Value="ViewModel.SelectedItemId"
+                                       ValueChanged="OnItemSelected"
+                                       Variant="Variant.Outlined"
+                                       AnchorOrigin="Origin.BottomCenter"
+                                       AdornmentIcon="@Icons.Material.Filled.Inventory2"
+                                       AdornmentColor="Color.Primary">
+                                <MudSelectItem Value="@Guid.Empty">-- Pilih Barang --</MudSelectItem>
+                                @foreach (var item in ViewModel.PendingItems)
+                                {
+                                    <MudSelectItem Value="@item.Id">@item.Nama</MudSelectItem>
+                                }
+                            </MudSelect>
+                            @if (ViewModel.SelectedItemId == Guid.Empty)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                    Silakan pilih barang yang baru diantar.
+                                </MudText>
+                            }
+                        </MudItem>
+
+                        @* Field Rak (Auto Fill - Read Only) *@
+                        <MudItem xs="12">
+                            <MudTextField Label="Lokasi Rak (Target)"
+                                          Value="@ViewModel.TargetRackName"
+                                          ReadOnly="true"
+                                          Variant="Variant.Filled"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Inventory2"
+                                          HelperText="Terisi otomatis sesuai registrasi admin." />
+                        </MudItem>
+
+                        @* Checkbox Rak Penuh *@
+                        <MudItem xs="12">
+                            <MudPaper Class="pa-4 mt-2" Elevation="0" Outlined="true" Style="background-color: #fff3e0;">
+                                <MudCheckBox @bind-Value="ViewModel.IsRackFull"
+                                             Label="Apakah Rak ini sudah penuh?"
+                                             Color="Color.Warning"
+                                             Dense="true"
+                                             UnCheckedColor="Color.Default" />
+                                <MudText Typo="Typo.caption" Class="ml-8 d-block text-muted">
+                                    Centang jika rak tidak muat lagi setelah barang ini dimasukkan.
+                                </MudText>
+                            </MudPaper>
+                        </MudItem>
+
+                        @* Tombol Submit *@
+                        <MudItem xs="12" Class="pt-6">
+                            <MudButton ButtonType="ButtonType.Submit"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Success"
+                                       Size="Size.Large"
+                                       FullWidth="true"
+                                       StartIcon="@Icons.Material.Filled.CheckCircle">
+                                KONFIRMASI BARANG SAMPAI
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </EditForm>
+            }
+        </MudCardContent>
+    </MudCard>
+</MudContainer>

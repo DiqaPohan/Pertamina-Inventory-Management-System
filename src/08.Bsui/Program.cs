@@ -18,6 +18,8 @@ Console.WriteLine($"Starting Pertamina Inventory...");
 var builder = WebApplication.CreateBuilder(args);
 
 // Registrasi ViewModel
+
+builder.Services.AddScoped<ItemConfirmationViewModel>();
 builder.Services.AddScoped<InventoryViewModel>();
 builder.Services.AddScoped<DashboardViewModel>();
 
