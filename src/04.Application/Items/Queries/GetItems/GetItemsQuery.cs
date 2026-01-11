@@ -28,38 +28,32 @@ public class GetItemsQueryHandler : IRequestHandler<GetItemsQuery, PaginatedList
 
     public async Task<PaginatedListResponse<Item>> Handle(GetItemsQuery request, CancellationToken cancellationToken)
     {
-        // 1. Query dasar dengan Include Rack (Eager Loading)
-        // Kita tarik data Rack-nya sekalian biar relasi FK-nya kepake
+        // 1. Ambil data dasar dan include Rack-nya
         var query = _context.Items
             .Include(x => x.Rack)
+            .Where(x => !x.IsDeleted) // Jangan tampilin yang sudah dihapus
             .AsNoTracking();
 
-        // 2. Filter IsDeleted (Standard Practice)
-        query = query.Where(x => !x.IsDeleted);
-
-        // 3. LOGIC FILTER STATUS
-        // Jika request status tidak diisi, secara default kita CUMA nampilin yang Active
+        // 2. FILTER STATUS (DIPERBAIKI)
+        // Jika user minta status spesifik (misal cuma mau liat yang Pending), baru kita filter.
+        // Jika tidak diisi (null), kita tampilin SEMUANYA (Active & Pending).
         if (request.Status.HasValue)
         {
             query = query.Where(x => x.Status == request.Status.Value);
         }
-        else
-        {
-            query = query.Where(x => x.Status == ItemStatus.Active);
-        }
 
-        // 4. Filter berdasarkan RackId
+        // 3. Filter berdasarkan RackId jika ada
         if (!string.IsNullOrEmpty(request.RackId))
         {
             query = query.Where(x => x.RackId == request.RackId);
         }
 
-        // 5. Hitung total data sebelum paging
+        // 4. Hitung total data
         var totalCount = await query.CountAsync(cancellationToken);
 
-        // 6. Ambil data dengan Paging & Sorting
+        // 5. Eksekusi Query dengan Paging & Sorting terbaru
         var items = await query
-            .OrderBy(x => x.Name)
+            .OrderByDescending(x => x.Created) // Tampilin yang paling baru lu input di atas
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
             .ToListAsync(cancellationToken);

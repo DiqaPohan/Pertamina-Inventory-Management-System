@@ -11,6 +11,7 @@ using Pertamina.SolutionTemplate.WebApi.Common.ModelBindings;
 using Pertamina.SolutionTemplate.WebApi.Services;
 using Pertamina.SolutionTemplate.WebApi.Services.BackEnd;
 using Pertamina.SolutionTemplate.WebApi.Services.Documentation;
+using System.Text.Json.Serialization; // Jangan lupa using ini
 
 Console.WriteLine($"Starting {CommonValueFor.EntryAssemblySimpleName}...");
 
@@ -23,13 +24,12 @@ builder.Services.AddWebApi(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddApiVersioning();
 builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddControllers(options =>
-{
-    options.Filters.Add(new ApiExceptionFilterAttribute());
-    options.ModelBinderProviders.Insert(0, new JsonModelBinderProvider());
-})
-.AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // INI PENTING: Supaya tidak error saat ada relasi bolak-balik (Item <-> Rack)
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 var app = builder.Build();
 
 using var scope = app.Services.CreateScope();
