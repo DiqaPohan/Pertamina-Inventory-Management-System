@@ -2,12 +2,12 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Pertamina.SolutionTemplate.Application.Common.Exceptions;
-using Application.Services.Persistence;
 using Pertamina.SolutionTemplate.Shared.Common.Enums;
 
 namespace Pertamina.SolutionTemplate.Application.Items.Commands.ConfirmPlacement;
 
-public record ConfirmPlacementCommand(Guid Id) : IRequest<bool>;
+// Tambahkan ScannedRackId biar tau barang ditaruh di rak mana pas konfirmasi
+public record ConfirmPlacementCommand(Guid Id, string ScannedRackId) : IRequest<bool>;
 
 public class ConfirmPlacementCommandHandler : IRequestHandler<ConfirmPlacementCommand, bool>
 {
@@ -20,14 +20,26 @@ public class ConfirmPlacementCommandHandler : IRequestHandler<ConfirmPlacementCo
 
     public async Task<bool> Handle(ConfirmPlacementCommand request, CancellationToken cancellationToken)
     {
-        // Cari barang berdasarkan ID yang dikirim dari scan QR / dropdown
+        // 1. Cari barangnya
         var entity = await _context.Items
             .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
         if (entity == null)
             throw new NotFoundException("Barang tidak ditemukan!");
 
-        // Ubah status jadi Active karena pegawai sudah konfirmasi naruh di rak
+        // 2. VALIDASI: Cek apakah Rak yang di-scan pegawai ada di database?
+        var rack = await _context.Racks
+            .FirstOrDefaultAsync(r => r.RackId == request.ScannedRackId, cancellationToken);
+
+        if (rack == null)
+            throw new Exception($"QR Code Rak '{request.ScannedRackId}' tidak terdaftar di sistem!");
+
+        // 3. LOGIC TAMBAHAN (Optional tapi Keren): 
+        // Kalau rak yang di-scan beda sama rencana awal (RackId di database), 
+        // sistem bakal otomatis update ke lokasi baru hasil scan pegawai.
+        entity.RackId = request.ScannedRackId;
+
+        // 4. Ubah status jadi Active (Pakai Enum)
         entity.Status = ItemStatus.Active;
 
         await _context.SaveChangesAsync(cancellationToken);

@@ -14,7 +14,7 @@ public class SolutionTemplateDbContext : DbContext, ISolutionTemplateDbContext
     }
 
     public DbSet<Item> Items => Set<Item>();
-    public DbSet<RackSlot> RackSlots => Set<RackSlot>();
+    public DbSet<Rack> Racks => Set<Rack>();
     public DbSet<LoanTransaction> LoanTransactions => Set<LoanTransaction>();
     public DbSet<Audit> Audits => Set<Audit>();
 

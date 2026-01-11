@@ -16,8 +16,9 @@ public class GetLoanByIdQueryHandler : IRequestHandler<GetLoanByIdQuery, LoanTra
     public async Task<LoanTransaction?> Handle(GetLoanByIdQuery request, CancellationToken cancellationToken)
     {
         return await _context.LoanTransactions
-            .Include(x => x.Item) // Menarik data barang terkait
             .AsNoTracking()
+            .Include(x => x.Item)
+                .ThenInclude(i => i.Rack) // <--- TARIK INFO RAKNYA SEKALIAN BROK!
             .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
     }
 }

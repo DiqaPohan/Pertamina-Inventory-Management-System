@@ -2,10 +2,10 @@
 using Domain.Entities;
 using Application.Services.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Pertamina.SolutionTemplate.Shared.Common.Enums;
 
 namespace Pertamina.SolutionTemplate.Application.Items.Queries.GetItemById;
 
-// Kita kirim Id, dan mengharapkan return berupa object Item (atau null)
 public record GetItemByIdQuery(Guid Id) : IRequest<Item?>;
 
 public class GetItemByIdQueryHandler : IRequestHandler<GetItemByIdQuery, Item?>
@@ -18,6 +18,10 @@ public class GetItemByIdQueryHandler : IRequestHandler<GetItemByIdQuery, Item?>
     {
         return await _context.Items
             .AsNoTracking()
+            .Include(x => x.Rack) // WAJIB: Biar data Rak-nya ke-load (Eager Loading)
             .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+
+        // Catatan: Filter .Where(Status == Active) dihapus supaya Admin 
+        // tetep bisa liat detail barang meskipun statusnya masih Pending.
     }
 }

@@ -1,24 +1,26 @@
-﻿using MediatR;
+﻿using Application.Services.Persistence;
 using Domain.Entities;
-using Application.Services.Persistence;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Pertamina.SolutionTemplate.Shared.Common.Enums;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Pertamina.SolutionTemplate.Application.Items.Commands.CreateItem;
 
-// 1. Ganti return type IRequest dari int ke Guid
-public class CreateItemCommand : IRequest<Guid>
+public record CreateItemCommand : IRequest<Guid>
 {
-    public string Name { get; set; } = string.Empty;
-    public ItemCategory Category { get; set; }
-    public string? RackId { get; set; }
-    public int TotalStock { get; set; }
-    public int AvailableStock { get; set; }
-    public string Unit { get; set; } = "pcs";
-    public string? ImageUrl { get; set; }
-    public DateTime? ExpiryDate { get; set; }
+    public string Name { get; init; } = default!;
+    public string RackId { get; init; } = default!;
+    public int Category { get; init; }
+    public int TotalStock { get; init; }
+    public string Unit { get; init; } = default!;
+    public string? ImageUrl { get; init; }
+    public DateTime? ExpiryDate { get; init; }
 }
 
-// 2. Ganti IRequestHandler dari int ke Guid
 public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, Guid>
 {
     private readonly ISolutionTemplateDbContext _context;
@@ -30,25 +32,66 @@ public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, Guid>
 
     public async Task<Guid> Handle(CreateItemCommand request, CancellationToken cancellationToken)
     {
+        // 1. Bersihkan inputan biar gak ada spasi gaib yang bikin pencarian gagal
+        var cleanName = request.Name.Trim();
+        var cleanRackId = request.RackId.Trim();
+
+        // 2. Cek apakah Rak tersedia
+        var rack = await _context.Racks
+            .FirstOrDefaultAsync(r => r.RackId == cleanRackId, cancellationToken);
+
+        if (rack == null)
+            throw new Exception($"Gagal: Lokasi Rak '{cleanRackId}' tidak ditemukan di database!");
+
+        // 3. LOGIC ANTI-DUPLIKASI (Pencarian barang yang sudah ada di rak tersebut)
+        var existingItem = await _context.Items
+            .Where(x => x.Name.ToLower() == cleanName.ToLower()
+                     && x.RackId == cleanRackId
+                     && !x.IsDeleted)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (existingItem != null)
+        {
+            // --- JIKA BARANG SUDAH ADA, UPDATE STOK SAJA ---
+            existingItem.TotalStock += request.TotalStock;
+            existingItem.AvailableStock += request.TotalStock;
+
+            // Update info opsional kalau lu mau (misal update gambar terbaru)
+            if (!string.IsNullOrEmpty(request.ImageUrl))
+            {
+                existingItem.ImageUrl = request.ImageUrl;
+            }
+
+            existingItem.Modified = DateTimeOffset.Now;
+            existingItem.ModifiedBy = "Admin-Upsert";
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            // Kembalikan ID barang yang lama (biar FE gak bingung)
+            return existingItem.Id;
+        }
+
+        // 4. JIKA BARANG BELUM ADA, BARU BUAT BARU
         var entity = new Item
         {
-            // ID tidak perlu diisi manual, biasanya auto-generate Guid.NewGuid() di constructor Entity
-            Name = request.Name,
-            Category = request.Category,
-            RackId = request.RackId,
-            Status = ItemStatus.Pending,
+            Id = Guid.NewGuid(),
+            Name = cleanName,
+            RackId = cleanRackId,
+            Category = (ItemCategory)request.Category,
             TotalStock = request.TotalStock,
-            AvailableStock = request.AvailableStock,
+            AvailableStock = request.TotalStock,
             Unit = request.Unit,
             ImageUrl = request.ImageUrl,
-            ExpiryDate = request.ExpiryDate
+            ExpiryDate = request.ExpiryDate,
+            Status = ItemStatus.Pending,
+            IsDeleted = false,
+            Created = DateTimeOffset.Now,
+            CreatedBy = "Admin-Manual"
         };
 
         _context.Items.Add(entity);
-
         await _context.SaveChangesAsync(cancellationToken);
 
-        // Sekarang return entity.Id yang bertipe Guid
         return entity.Id;
     }
-}   
+}

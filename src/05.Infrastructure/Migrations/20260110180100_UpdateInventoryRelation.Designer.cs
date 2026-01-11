@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pertamina.SolutionTemplate.Infrastructure.Persistence.SqlServer;
 
@@ -11,9 +12,11 @@ using Pertamina.SolutionTemplate.Infrastructure.Persistence.SqlServer;
 namespace Pertamina.SolutionTemplate.Infrastructure.Migrations
 {
     [DbContext(typeof(SqlServerSolutionTemplateDbContext))]
-    partial class SqlServerSolutionTemplateDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260110180100_UpdateInventoryRelation")]
+    partial class UpdateInventoryRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

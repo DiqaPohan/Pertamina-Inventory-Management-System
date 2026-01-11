@@ -2,6 +2,7 @@
 using Shared.Common.Enums;
 using Application.Services.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Pertamina.SolutionTemplate.Shared.Common.Enums;
 
 namespace Pertamina.SolutionTemplate.Application.Loans.Commands.Update;
 
@@ -22,26 +23,41 @@ public class UpdateLoanStatusCommandHandler : IRequestHandler<UpdateLoanStatusCo
 
     public async Task<bool> Handle(UpdateLoanStatusCommand request, CancellationToken cancellationToken)
     {
-        // 1. Cari data berdasarkan ID
+        // 1. Cari data transaksi peminjaman, Include Item-nya buat update stok nanti
         var entity = await _context.LoanTransactions
+            .Include(x => x.Item)
             .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
-        // 2. Jika tidak ditemukan, kembalikan false atau lempar Exception
-        if (entity == null)
+        if (entity == null) return false;
+
+        // Cek jika status sebelumnya sudah Returned, jangan diproses lagi biar stok nggak double nambah
+        if (entity.Status == LoanStatus.Returned && request.Status == LoanStatus.Returned)
         {
-            return false;
+            return true;
         }
 
-        // 3. Update hanya statusnya
+        // 2. Update status transaksi
         entity.Status = request.Status;
 
-        // Logika tambahan: Jika status berubah jadi Returned (3), isi ReturnDate secara otomatis
+        // 3. LOGIKA PENGEMBALIAN BARANG KE RAK
         if (request.Status == LoanStatus.Returned)
         {
             entity.ReturnDate = DateTime.Now;
+
+            // Pastikan barangnya ada, lalu tambahkan stoknya kembali
+            if (entity.Item != null)
+            {
+                entity.Item.AvailableStock += 1;
+
+                // Opsional: Jika stok kembali penuh, pastikan tidak melebihi TotalStock
+                if (entity.Item.AvailableStock > entity.Item.TotalStock)
+                {
+                    entity.Item.AvailableStock = entity.Item.TotalStock;
+                }
+            }
         }
 
-        // 4. Simpan perubahan
+        // 4. Simpan perubahan (Update tabel Loans & Items sekaligus)
         await _context.SaveChangesAsync(cancellationToken);
 
         return true;
