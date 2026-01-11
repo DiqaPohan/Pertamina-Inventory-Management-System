@@ -18,6 +18,8 @@ namespace Pertamina.SolutionTemplate.Bsui.Models
         // Di razor: @item.ExpDate. Jadi property ini harus ExpDate
         public DateTime? ExpDate { get; set; }
 
+        public ItemStatus Status { get; set; }
+
         public bool IsExpiredSoon
         {
             get
