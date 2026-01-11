@@ -43,20 +43,21 @@ public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, Guid>
         if (rack == null)
             throw new Exception($"Gagal: Lokasi Rak '{cleanRackId}' tidak ditemukan di database!");
 
-        // 3. LOGIC ANTI-DUPLIKASI (Pencarian barang yang sudah ada di rak tersebut)
+        // 3. LOGIC ANTI-DUPLIKASI (FIXED: Cuma cari yang berstatus PENDING)
+        // Kalau ada barang aktif, sistem akan tetep bikin baris baru sebagai Pending.
         var existingItem = await _context.Items
             .Where(x => x.Name.ToLower() == cleanName.ToLower()
                      && x.RackId == cleanRackId
+                     && x.Status == ItemStatus.Pending // HANYA MERGE JIKA SAMA-SAMA PENDING
                      && !x.IsDeleted)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (existingItem != null)
         {
-            // --- JIKA BARANG SUDAH ADA, UPDATE STOK SAJA ---
+            // --- JIKA BARANG PENDING SUDAH ADA, UPDATE STOK SAJA ---
             existingItem.TotalStock += request.TotalStock;
             existingItem.AvailableStock += request.TotalStock;
 
-            // Update info opsional kalau lu mau (misal update gambar terbaru)
             if (!string.IsNullOrEmpty(request.ImageUrl))
             {
                 existingItem.ImageUrl = request.ImageUrl;
@@ -66,12 +67,10 @@ public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, Guid>
             existingItem.ModifiedBy = "Admin-Upsert";
 
             await _context.SaveChangesAsync(cancellationToken);
-
-            // Kembalikan ID barang yang lama (biar FE gak bingung)
             return existingItem.Id;
         }
 
-        // 4. JIKA BARANG BELUM ADA, BARU BUAT BARU
+        // 4. JIKA BELUM ADA YANG PENDING (Biarpun ada yang Active), BUAT BARU SEBAGAI PENDING
         var entity = new Item
         {
             Id = Guid.NewGuid(),
@@ -83,7 +82,7 @@ public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, Guid>
             Unit = request.Unit,
             ImageUrl = request.ImageUrl,
             ExpiryDate = request.ExpiryDate,
-            Status = ItemStatus.Pending,
+            Status = ItemStatus.Pending, // Default 0
             IsDeleted = false,
             Created = DateTimeOffset.Now,
             CreatedBy = "Admin-Manual"

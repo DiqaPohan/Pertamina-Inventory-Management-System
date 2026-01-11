@@ -101,7 +101,7 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
             get
             {
                 if (string.IsNullOrWhiteSpace(SearchString)) return Items;
-                return Items.Where(x => x.Nama.Contains(SearchString, StringComparison.OrdinalIgnoreCase) ||
+                return Items.Where(x => (x.Nama != null && x.Nama.Contains(SearchString, StringComparison.OrdinalIgnoreCase)) ||
                                         (x.NoRak != null && x.NoRak.Contains(SearchString, StringComparison.OrdinalIgnoreCase)));
             }
         }
@@ -157,7 +157,8 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
                             NoRak = x.RackId ?? "N/A",
                             Satuan = x.Unit ?? "pcs",
                             ImageUrl = x.ImageUrl,
-                            ExpDate = x.ExpiryDate
+                            ExpDate = x.ExpiryDate,
+                            Status = x.Status // DI SINI: Gue tambahin mapping status
                         }).ToList();
                     }
                 }
@@ -389,6 +390,7 @@ namespace Pertamina.SolutionTemplate.Bsui.ViewModels
             public string? RackId { get; set; }
             public string? ImageUrl { get; set; }
             public DateTime? ExpiryDate { get; set; }
+            public ItemStatus Status { get; set; } // Tambahan Status
         }
 
         public class RackDto

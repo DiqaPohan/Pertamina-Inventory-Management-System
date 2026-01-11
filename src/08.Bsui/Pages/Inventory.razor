@@ -51,8 +51,13 @@
     }
     else
     {
+        @* --- LOGIC PEMISAHAN DATA BERDASARKAN STATUS --- *@
+        var activeItems = ViewModel.FilteredItems.Where(x => x.Status != ItemStatus.Pending).ToList();
+        var pendingItems = ViewModel.FilteredItems.Where(x => x.Status == ItemStatus.Pending).ToList();
+
+        <!-- SECTION 1: BARANG AKTIF -->
         <MudGrid Spacing="4">
-            @foreach (var item in ViewModel.FilteredItems)
+            @foreach (var item in activeItems)
             {
                 <MudItem xs="12" sm="6" md="4" lg="3">
                     <MudCard Elevation="0" Style="border: 1px solid rgba(0,0,0,0.1); border-radius: 16px; overflow: hidden; height: 100%;">
@@ -110,10 +115,64 @@
                 </MudItem>
             }
         </MudGrid>
+
+        <!-- --- PEMISAH UNTUK PENDING --- -->
+        @if (pendingItems.Any())
+        {
+            <div class="d-flex align-center gap-4 mt-12 mb-6">
+                <div style="flex-grow: 1; height: 1px; background: rgba(0,0,0,0.1);"></div>
+                <MudText Typo="Typo.button" Style="color: rgba(0,0,0,0.4); font-weight:700; white-space:nowrap;">MENUNGGU PENEMPATAN (PENDING)</MudText>
+                <div style="flex-grow: 1; height: 1px; background: rgba(0,0,0,0.1);"></div>
+            </div>
+
+            <!-- SECTION 2: BARANG PENDING (OPACITY LEBIH RENDAH + INFO STOK & KATEGORI) -->
+            <MudGrid Spacing="4">
+                @foreach (var item in pendingItems)
+                {
+                    <MudItem xs="12" sm="6" md="4" lg="3">
+                        <MudCard Elevation="0" Style="border: 1px dashed rgba(0,0,0,0.2); border-radius: 16px; overflow: hidden; height: 100%; opacity: 0.35;">
+                            <div style="height: 200px; background-color: #f5f5f5; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; filter: grayscale(1);">
+                                <img src="@item.ImageUrl" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/400?text=No+Image'" />
+                                <div style="position:absolute; bottom:0; width:100%; background:rgba(0,0,0,0.4); color:white; text-align:center; padding:4px; font-size:10px;">PENDING SCAN</div>
+                            </div>
+
+                            <MudCardContent>
+                                <div class="d-flex justify-space-between align-center mb-2">
+                                    <MudText Typo="Typo.h6" Style="font-weight: 700; color: #757575;">@item.Nama</MudText>
+                                    @switch (item.ItemCategory)
+                                    {
+                                        case ItemCategory.Light:
+                                            <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Text" Style="opacity: 0.6;">Light</MudChip>
+                                            break;
+                                        case ItemCategory.Medium:
+                                            <MudChip T="string" Color="Color.Warning" Size="Size.Small" Variant="Variant.Text" Style="opacity: 0.6;">Medium</MudChip>
+                                            break;
+                                        case ItemCategory.Heavy:
+                                            <MudChip T="string" Color="Color.Error" Size="Size.Small" Variant="Variant.Text" Style="opacity: 0.6;">Heavy</MudChip>
+                                            break;
+                                    }
+                                </div>
+                                <div class="d-flex align-center mb-1">
+                                    <MudIcon Icon="@Icons.Material.Filled.GridView" Size="Size.Small" Color="Color.Default" Class="mr-2" />
+                                    <MudText Typo="Typo.body2">Target: @item.NoRak</MudText>
+                                </div>
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Small" Color="Color.Default" Class="mr-2" />
+                                    <MudText Typo="Typo.body2">Stok Baru: @item.Stok @item.Satuan</MudText>
+                                </div>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => ViewModel.DeleteItem(item.Id))" />
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+        }
     }
 </MudContainer>
 
-<!-- Dialog -->
+<!-- Dialog Form Tetap Utuh -->
 <MudDialog @bind-IsVisible="ViewModel.IsAddDialogOpen" Options="ViewModel.DialogOptions">
     <TitleContent>
         <MudText Typo="Typo.h5" Style="font-weight:700;">@(ViewModel.EditingItemId.HasValue ? "Edit Barang" : "Tambah Barang")</MudText>
